@@ -11,6 +11,7 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.{ts,tsx,vue}\" --fix"
   },
   "dependencies": {
+    "@heroicons/vue": "^2.2.0",
     "autoprefixer": "^10.4.22",
     "axios": "^1.13.2",
     "pinia": "^3.0.4",

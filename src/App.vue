@@ -15,7 +15,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <Layout :title="route.meta.title as string">
+  <Layout v-if="authStore.isAuthenticated" :title="route.meta.title as string">
     <RouterView />
   </Layout>
+  <RouterView v-else />
 </template>

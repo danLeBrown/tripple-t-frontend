@@ -59,9 +59,21 @@ class BaseApiService {
       (response) => response,
       async (error) => {
         if (error.response?.status === 401) {
-          // Unauthorized - clear auth state
+          // Unauthorized - clear auth state and redirect to login
           const authStore = useAuthStore();
-          authStore.logout();
+          const currentPath = window.location.pathname;
+          
+          // Only redirect if not already on login page
+          if (currentPath !== '/login') {
+            authStore.logout();
+            // Use router for navigation instead of window.location
+            // This will be handled by the router guard
+            setTimeout(() => {
+              window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+            }, 0);
+          } else {
+            authStore.logout();
+          }
         }
         return Promise.reject(error);
       },
