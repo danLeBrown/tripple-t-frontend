@@ -2,19 +2,21 @@
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
+import Alert from './components/common/Alert.vue';
 import Layout from './components/layout/Layout.vue';
 import { useAuthStore } from './stores/auth';
 
 const route = useRoute();
 const authStore = useAuthStore();
 
-onMounted(() => {
+onMounted(async () => {
   // Initialize auth state from localStorage
-  authStore.initializeAuth();
+  await authStore.initializeAuth();
 });
 </script>
 
 <template>
+  <Alert />
   <Layout v-if="authStore.isAuthenticated" :title="route.meta.title as string">
     <RouterView />
   </Layout>

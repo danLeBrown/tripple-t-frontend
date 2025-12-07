@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance } from 'axios';
 
+import { useAlertStore } from '../stores/alert';
 import { useAuthStore } from '../stores/auth';
 import type { User } from '../types';
 
@@ -110,6 +111,16 @@ class BaseApiService {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
+        const alertStore = useAlertStore();
+
+        // Show error alert for non-401 errors
+        if (error.response && error.response.status !== 401) {
+          const errorMessage =
+            error.response.data?.message ||
+            error.response.data?.error ||
+            `Request failed: ${error.response.statusText}`;
+          alertStore.error(errorMessage);
+        }
 
         // If error is 401 and we haven't tried to refresh yet
         if (error.response?.status === 401 && !originalRequest._retry) {
@@ -169,6 +180,11 @@ class BaseApiService {
             }
             return Promise.reject(error);
           }
+        }
+
+        // Handle network errors or other errors without response
+        if (!error.response) {
+          alertStore.error('Network error. Please check your connection.');
         }
 
         return Promise.reject(error);

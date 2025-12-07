@@ -121,7 +121,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Initialize auth state from localStorage
-  function initializeAuth() {
+  async function initializeAuth() {
     const storedToken = localStorage.getItem('jwt_token');
     const storedRefreshToken = localStorage.getItem('refresh_token');
     const storedUser = localStorage.getItem('user');
@@ -147,6 +147,15 @@ export const useAuthStore = defineStore('auth', () => {
     // Initialize session ID if not already set (generate a new one)
     if (!sessionId.value) {
       sessionId.value = Math.random().toString(36).substring(2, 15);
+    }
+
+    // Fetch CSRF token if user is authenticated (needed for all API requests)
+    if (isAuthenticated.value && !csrfToken.value) {
+      try {
+        await fetchCsrfToken();
+      } catch (error) {
+        console.error('Failed to fetch CSRF token on initialization:', error);
+      }
     }
   }
 
