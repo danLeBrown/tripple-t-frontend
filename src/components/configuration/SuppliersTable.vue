@@ -23,13 +23,25 @@
       @close="closeModal"
     >
       <form @submit.prevent="handleSubmit" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Business Name</label
+          >
+          <input
+            v-model="formData.business_name"
+            type="text"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            placeholder="Acme Inc."
+          />
+        </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
-              >First Name</label
+              >Contact Person First Name</label
             >
             <input
-              v-model="formData.first_name"
+              v-model="formData.contact_person_first_name"
               type="text"
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -37,10 +49,10 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1"
-              >Last Name</label
+              >Contact Person Last Name</label
             >
             <input
-              v-model="formData.last_name"
+              v-model="formData.contact_person_last_name"
               type="text"
               required
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -49,39 +61,61 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Email</label
+            >Contact Person Email
+            <span class="text-gray-500 text-xs ml-1">(optional)</span></label
           >
           <input
-            v-model="formData.email"
+            v-model="formData.contact_person_email"
             type="email"
-            required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            placeholder="johndoe@example.com"
           />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
-            >Phone Number</label
+            >Contact Person Phone Number</label
           >
           <input
-            v-model="formData.phone_number"
+            v-model="formData.contact_person_phone_number"
             type="tel"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            placeholder="+1234567890"
           />
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1"
+        <div v-if="editingSupplier">
+          <label class="block text-sm font-medium text-gray-700 mb-2"
             >Status</label
           >
-          <select
-            v-model="formData.status"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-            <option value="pending">Pending</option>
-          </select>
+          <div class="flex items-center gap-4">
+            <label class="flex items-center cursor-pointer">
+              <input
+                v-model="formData.status"
+                type="radio"
+                value="active"
+                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span class="ml-2 text-sm text-gray-700">Active</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input
+                v-model="formData.status"
+                type="radio"
+                value="inactive"
+                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span class="ml-2 text-sm text-gray-700">Inactive</span>
+            </label>
+            <label class="flex items-center cursor-pointer">
+              <input
+                v-model="formData.status"
+                type="radio"
+                value="pending"
+                class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span class="ml-2 text-sm text-gray-700">Pending</span>
+            </label>
+          </div>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -98,12 +132,16 @@
           <label class="block text-sm font-medium text-gray-700 mb-1"
             >State</label
           >
-          <input
+          <select
             v-model="formData.state"
-            type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
+          >
+            <option value="">Select a state</option>
+            <option v-for="state in nigerianStates" :key="state" :value="state">
+              {{ state }}
+            </option>
+          </select>
         </div>
       </form>
       <template #footer>
@@ -152,11 +190,14 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
 
+import nigerianStatesData from '../../data/nigerian-states.json';
 import { useAlertStore } from '../../stores/alert';
 import { useConfigurationStore } from '../../stores/configuration';
 import type { Supplier, SupplierStatus } from '../../types';
 import DataTable from '../common/DataTable.vue';
 import Modal from '../common/Modal.vue';
+
+const nigerianStates = nigerianStatesData as string[];
 
 const configStore = useConfigurationStore();
 const alertStore = useAlertStore();
@@ -169,20 +210,35 @@ const currentPage = ref(0);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const formData = reactive({
-  first_name: '',
-  last_name: '',
-  email: '',
-  phone_number: '',
-  status: 'active' as SupplierStatus,
+  business_name: '',
+  contact_person_first_name: '',
+  contact_person_last_name: '',
+  contact_person_email: '',
+  contact_person_phone_number: '',
+  status: 'active' as SupplierStatus, // Only used when editing
   address: '',
   state: '',
 });
 
 const columns = [
-  { key: 'first_name', label: 'First Name' },
-  { key: 'last_name', label: 'Last Name' },
-  { key: 'email', label: 'Email' },
-  { key: 'phone_number', label: 'Phone' },
+  { key: 'business_name', label: 'Business Name' },
+  {
+    key: 'contact_person_first_name',
+    label: 'Contact First Name',
+  },
+  {
+    key: 'contact_person_last_name',
+    label: 'Contact Last Name',
+  },
+  {
+    key: 'contact_person_email',
+    label: 'Contact Email',
+    format: (value: string | null) => value || '-',
+  },
+  {
+    key: 'contact_person_phone_number',
+    label: 'Contact Phone',
+  },
   { key: 'status', label: 'Status' },
   { key: 'state', label: 'State' },
 ];
@@ -232,10 +288,11 @@ function handleNextPage() {
 
 function handleEdit(supplier: Supplier) {
   editingSupplier.value = supplier;
-  formData.first_name = supplier.first_name;
-  formData.last_name = supplier.last_name;
-  formData.email = supplier.email;
-  formData.phone_number = supplier.phone_number;
+  formData.business_name = supplier.business_name;
+  formData.contact_person_first_name = supplier.contact_person_first_name;
+  formData.contact_person_last_name = supplier.contact_person_last_name;
+  formData.contact_person_email = supplier.contact_person_email || '';
+  formData.contact_person_phone_number = supplier.contact_person_phone_number;
   formData.status = supplier.status;
   formData.address = supplier.address;
   formData.state = supplier.state;
@@ -243,11 +300,7 @@ function handleEdit(supplier: Supplier) {
 }
 
 function handleDelete(supplier: Supplier) {
-  if (
-    confirm(
-      `Are you sure you want to delete "${supplier.first_name} ${supplier.last_name}"?`,
-    )
-  ) {
+  if (confirm(`Are you sure you want to delete "${supplier.business_name}"?`)) {
     configStore.deleteSupplier(supplier.id);
     alertStore.success('Supplier deleted successfully');
   }
@@ -257,10 +310,11 @@ function closeModal() {
   showModal.value = false;
   showCreateModal.value = false;
   editingSupplier.value = null;
-  formData.first_name = '';
-  formData.last_name = '';
-  formData.email = '';
-  formData.phone_number = '';
+  formData.business_name = '';
+  formData.contact_person_first_name = '';
+  formData.contact_person_last_name = '';
+  formData.contact_person_email = '';
+  formData.contact_person_phone_number = '';
   formData.status = 'active';
   formData.address = '';
   formData.state = '';
@@ -269,11 +323,24 @@ function closeModal() {
 async function handleSubmit() {
   isSubmitting.value = true;
   try {
+    // Prepare data - convert empty email to null for optional field
+    const submitData: any = {
+      business_name: formData.business_name,
+      contact_person_first_name: formData.contact_person_first_name,
+      contact_person_last_name: formData.contact_person_last_name,
+      contact_person_email: formData.contact_person_email.trim() || null,
+      contact_person_phone_number: formData.contact_person_phone_number,
+      address: formData.address,
+      state: formData.state,
+    };
+
+    // Only include status when editing (backend sets default on create)
     if (editingSupplier.value) {
-      await configStore.updateSupplier(editingSupplier.value.id, formData);
+      submitData.status = formData.status;
+      await configStore.updateSupplier(editingSupplier.value.id, submitData);
       alertStore.success('Supplier updated successfully');
     } else {
-      await configStore.createSupplier(formData);
+      await configStore.createSupplier(submitData);
       alertStore.success('Supplier created successfully');
     }
     closeModal();
@@ -289,10 +356,11 @@ watch(showCreateModal, (val) => {
   if (val) {
     showModal.value = true;
     editingSupplier.value = null;
-    formData.first_name = '';
-    formData.last_name = '';
-    formData.email = '';
-    formData.phone_number = '';
+    formData.business_name = '';
+    formData.contact_person_first_name = '';
+    formData.contact_person_last_name = '';
+    formData.contact_person_email = '';
+    formData.contact_person_phone_number = '';
     formData.status = 'active';
     formData.address = '';
     formData.state = '';

@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow overflow-hidden">
+  <div class="bg-white rounded-lg shadow overflow-hidden w-full max-w-full">
     <div
       class="px-6 py-4 border-b border-gray-200 flex items-center justify-between"
     >
@@ -79,7 +79,7 @@
             <th
               v-for="column in columns"
               :key="column.key"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider truncate"
             >
               {{ column.label }}
             </th>

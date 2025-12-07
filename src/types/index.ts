@@ -34,20 +34,22 @@ export type SupplierStatus = 'active' | 'inactive' | 'pending';
 export type CustomerStatus = 'active' | 'inactive' | 'pending';
 
 export interface Supplier extends BaseEntity {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone_number: string;
+  business_name: string;
+  contact_person_first_name: string;
+  contact_person_last_name: string;
+  contact_person_email: string | null;
+  contact_person_phone_number: string;
   status: SupplierStatus;
   address: string;
   state: string;
 }
 
 export interface Customer extends BaseEntity {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone_number: string;
+  business_name: string;
+  contact_person_first_name: string;
+  contact_person_last_name: string;
+  contact_person_email: string | null;
+  contact_person_phone_number: string;
   status: CustomerStatus;
   address: string;
   state: string;
