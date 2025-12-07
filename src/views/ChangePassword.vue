@@ -119,9 +119,9 @@
 
 <script setup lang="ts">
 import {
-    ExclamationCircleIcon,
-    EyeIcon,
-    EyeSlashIcon,
+  ExclamationCircleIcon,
+  EyeIcon,
+  EyeSlashIcon,
 } from '@heroicons/vue/24/outline';
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
