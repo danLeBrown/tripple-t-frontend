@@ -26,18 +26,26 @@
               placeholder="Email address"
             />
           </div>
-          <div>
+          <div class="relative">
             <label for="password" class="sr-only">Password</label>
             <input
               id="password"
               v-model="formData.password"
               name="password"
-              type="password"
+              :type="showPassword ? 'text' : 'password'"
               autocomplete="current-password"
               required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              class="appearance-none rounded-none relative block w-full px-3 py-2 pr-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
               placeholder="Password"
             />
+            <button
+              type="button"
+              @click="showPassword = !showPassword"
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              <EyeIcon v-if="!showPassword" class="h-5 w-5" />
+              <EyeSlashIcon v-else class="h-5 w-5" />
+            </button>
           </div>
         </div>
 
@@ -90,7 +98,11 @@
 </template>
 
 <script setup lang="ts">
-import { ExclamationCircleIcon } from '@heroicons/vue/24/outline';
+import {
+    ExclamationCircleIcon,
+    EyeIcon,
+    EyeSlashIcon,
+} from '@heroicons/vue/24/outline';
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -107,17 +119,28 @@ const formData = reactive({
 
 const loading = ref(false);
 const error = ref<string | null>(null);
+const showPassword = ref(false);
 
 async function handleLogin() {
   loading.value = true;
   error.value = null;
 
   try {
-    await authStore.login(formData);
+    const loginResponse = await authStore.login(formData);
 
-    // Redirect to the original page or dashboard
-    const redirectTo = (route.query.redirect as string) || '/';
-    router.push(redirectTo);
+    // Check if this is first-time login
+    if (loginResponse.is_first_login) {
+      // Redirect to change password page
+      const redirectTo = (route.query.redirect as string) || '/';
+      router.push({
+        path: '/change-password',
+        query: { redirect: redirectTo },
+      });
+    } else {
+      // Redirect to the original page or dashboard
+      const redirectTo = (route.query.redirect as string) || '/';
+      router.push(redirectTo);
+    }
   } catch (err: any) {
     console.error(err);
     error.value =

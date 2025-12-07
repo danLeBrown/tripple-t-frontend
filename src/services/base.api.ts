@@ -149,34 +149,44 @@ class BaseApiService {
               originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`;
               return this.api(originalRequest);
             } catch (refreshError) {
-              // Refresh failed - redirect to login
+              // Refresh failed - clear tokens immediately and redirect to login
               processQueue(refreshError, null);
-              const currentPath = window.location.pathname;
 
+              // Clear localStorage immediately (synchronously) before any redirects
+              localStorage.removeItem('jwt_token');
+              localStorage.removeItem('refresh_token');
+              localStorage.removeItem('user');
+
+              // Then call logout to clear store state
+              await authStore.logout();
+
+              const currentPath = window.location.pathname;
               if (currentPath !== '/login') {
-                authStore.logout();
                 setTimeout(() => {
                   window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
                 }, 0);
-              } else {
-                authStore.logout();
               }
               return Promise.reject(refreshError);
             } finally {
               isRefreshing = false;
             }
           } else {
-            // No refresh token - redirect to login
+            // No refresh token - clear tokens immediately and redirect to login
             isRefreshing = false;
-            const currentPath = window.location.pathname;
 
+            // Clear localStorage immediately (synchronously) before any redirects
+            localStorage.removeItem('jwt_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user');
+
+            // Then call logout to clear store state
+            await authStore.logout();
+
+            const currentPath = window.location.pathname;
             if (currentPath !== '/login') {
-              authStore.logout();
               setTimeout(() => {
                 window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
               }, 0);
-            } else {
-              authStore.logout();
             }
             return Promise.reject(error);
           }
@@ -228,6 +238,11 @@ class BaseApiService {
       access_token: response.data.data.access_token,
       refresh_token: response.data.data.refresh_token,
     };
+  }
+
+  // Change password (for first-time login)
+  async changePassword(data: { new_password: string }): Promise<void> {
+    await this.api.post('/auth/change-password', data);
   }
 
   // Logout
