@@ -70,3 +70,49 @@ export interface SearchParams {
   from_time?: number;
   to_time?: number;
 }
+
+// Auth types
+export interface Permission extends BaseEntity {
+  subject: string;
+  slug: string;
+  action: string;
+  description: string;
+}
+
+export interface RolePermission extends BaseEntity {
+  role_id: string;
+  permission_id: string;
+  permission: Permission;
+}
+
+export interface Role extends BaseEntity {
+  name: string;
+  slug: string;
+  description: string;
+  permissions: RolePermission[];
+}
+
+export interface UserRole extends BaseEntity {
+  user_id: string;
+  role_id: string;
+  role: Role;
+}
+
+export interface User extends BaseEntity {
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  is_admin: boolean;
+  status: string;
+  last_login_at: number | null;
+  user_role: UserRole | null;
+}
+
+export interface LoginResponse {
+  user: User;
+  access_token: string;
+  refresh_token: string;
+  is_first_login: boolean;
+}

@@ -1,6 +1,7 @@
 import axios, { type AxiosInstance } from 'axios';
 
 import { useAuthStore } from '../stores/auth';
+import type { User } from '../types';
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
@@ -84,27 +85,92 @@ class BaseApiService {
       (error) => Promise.reject(error),
     );
 
-    // Response interceptor to handle errors
+    // Response interceptor to handle errors and token refresh
+    let isRefreshing = false;
+    let failedQueue: Array<{
+      resolve: (value?: string) => void;
+      reject: (error?: unknown) => void;
+    }> = [];
+
+    const processQueue = (
+      error: unknown | null,
+      token: string | null = null,
+    ) => {
+      failedQueue.forEach((prom) => {
+        if (error) {
+          prom.reject(error);
+        } else {
+          prom.resolve(token ?? undefined);
+        }
+      });
+      failedQueue = [];
+    };
+
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
-        if (error.response?.status === 401) {
-          // Unauthorized - clear auth state and redirect to login
-          const authStore = useAuthStore();
-          const currentPath = window.location.pathname;
+        const originalRequest = error.config;
 
-          // Only redirect if not already on login page
-          if (currentPath !== '/login') {
-            authStore.logout();
-            // Use router for navigation instead of window.location
-            // This will be handled by the router guard
-            setTimeout(() => {
-              window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
-            }, 0);
+        // If error is 401 and we haven't tried to refresh yet
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          if (isRefreshing) {
+            // If already refreshing, queue this request
+            return new Promise((resolve, reject) => {
+              failedQueue.push({ resolve, reject });
+            })
+              .then((token) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return this.api(originalRequest);
+              })
+              .catch((err) => Promise.reject(err));
+          }
+
+          originalRequest._retry = true;
+          isRefreshing = true;
+
+          const authStore = useAuthStore();
+
+          // Try to refresh the token
+          if (authStore.refreshToken) {
+            try {
+              const tokens = await authStore.refreshAccessToken();
+              processQueue(null, tokens.access_token);
+              originalRequest.headers.Authorization = `Bearer ${tokens.access_token}`;
+              return this.api(originalRequest);
+            } catch (refreshError) {
+              // Refresh failed - redirect to login
+              processQueue(refreshError, null);
+              const currentPath = window.location.pathname;
+
+              if (currentPath !== '/login') {
+                authStore.logout();
+                setTimeout(() => {
+                  window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+                }, 0);
+              } else {
+                authStore.logout();
+              }
+              return Promise.reject(refreshError);
+            } finally {
+              isRefreshing = false;
+            }
           } else {
-            authStore.logout();
+            // No refresh token - redirect to login
+            isRefreshing = false;
+            const currentPath = window.location.pathname;
+
+            if (currentPath !== '/login') {
+              authStore.logout();
+              setTimeout(() => {
+                window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+              }, 0);
+            } else {
+              authStore.logout();
+            }
+            return Promise.reject(error);
           }
         }
+
         return Promise.reject(error);
       },
     );
@@ -119,13 +185,43 @@ class BaseApiService {
   }
 
   // Auth
-  async login(credentials: {
-    email: string;
-    password: string;
-  }): Promise<{ token: string }> {
+  async login(credentials: { email: string; password: string }): Promise<{
+    user: User;
+    access_token: string;
+    refresh_token: string;
+    is_first_login: boolean;
+  }> {
     const response = await this.api.post('/auth/login', credentials);
-    const token = response.data.data.access_token;
-    return { token };
+    return {
+      user: response.data.data.user,
+      access_token: response.data.data.access_token,
+      refresh_token: response.data.data.refresh_token,
+      is_first_login: response.data.data.is_first_login,
+    };
+  }
+
+  // Refresh token
+  async refreshToken(refreshToken: string): Promise<{
+    access_token: string;
+    refresh_token: string;
+  }> {
+    const response = await this.api.post('/auth/refresh', {
+      refresh_token: refreshToken,
+    });
+    return {
+      access_token: response.data.data.access_token,
+      refresh_token: response.data.data.refresh_token,
+    };
+  }
+
+  // Logout
+  async logout(): Promise<void> {
+    try {
+      await this.api.post('/auth/logout');
+    } catch (error) {
+      // Even if logout endpoint fails, we should still clear local state
+      console.error('Logout endpoint failed:', error);
+    }
   }
 }
 
