@@ -62,9 +62,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const newProduct = await productsService.create(product);
-      products.value.push(newProduct);
-      return newProduct;
+      await productsService.create(product);
+      // Refetch to get updated list from server
+      await fetchProducts();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to create product';
@@ -78,12 +78,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await productsService.update(id, product);
-      const index = products.value.findIndex((p) => p.id === id);
-      if (index !== -1) {
-        products.value[index] = updated;
-      }
-      return updated;
+      await productsService.update(id, product);
+      // Refetch to get updated list from server
+      await fetchProducts();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to update product';
@@ -135,9 +132,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const newColor = await colorsService.create(colour);
-      colors.value.push(newColor);
-      return newColor;
+      await colorsService.create(colour);
+      // Refetch to get updated list from server
+      await fetchColors();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to create color';
@@ -151,12 +148,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await colorsService.update(id, color);
-      const index = colors.value.findIndex((c) => c.id === id);
-      if (index !== -1) {
-        colors.value[index] = updated;
-      }
-      return updated;
+      await colorsService.update(id, color);
+      // Refetch to get updated list from server
+      await fetchColors();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to update color';
@@ -208,9 +202,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const newSize = await sizesService.create(size);
-      sizes.value.push(newSize);
-      return newSize;
+      await sizesService.create(size);
+      // Refetch to get updated list from server
+      await fetchSizes();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to create size';
@@ -224,12 +218,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await sizesService.update(id, size);
-      const index = sizes.value.findIndex((s) => s.id === id);
-      if (index !== -1) {
-        sizes.value[index] = updated;
-      }
-      return updated;
+      await sizesService.update(id, size);
+      // Refetch to get updated list from server
+      await fetchSizes();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to update size';
@@ -281,9 +272,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const newUnit = await unitsService.create(unit);
-      units.value.push(newUnit);
-      return newUnit;
+      await unitsService.create(unit);
+      // Refetch to get updated list from server
+      await fetchUnits();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to create unit';
@@ -297,12 +288,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await unitsService.update(id, unit);
-      const index = units.value.findIndex((u) => u.id === id);
-      if (index !== -1) {
-        units.value[index] = updated;
-      }
-      return updated;
+      await unitsService.update(id, unit);
+      // Refetch to get updated list from server
+      await fetchUnits();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to update unit';
@@ -354,9 +342,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const newSupplier = await suppliersService.create(supplier);
-      suppliers.value.push(newSupplier);
-      return newSupplier;
+      await suppliersService.create(supplier);
+      // Refetch to get updated list from server
+      await fetchSuppliers();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to create supplier';
@@ -370,12 +358,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await suppliersService.update(id, supplier);
-      const index = suppliers.value.findIndex((s) => s.id === id);
-      if (index !== -1) {
-        suppliers.value[index] = updated;
-      }
-      return updated;
+      await suppliersService.update(id, supplier);
+      // Refetch to get updated list from server
+      await fetchSuppliers();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to update supplier';
@@ -427,9 +412,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const newCustomer = await customersService.create(customer);
-      customers.value.push(newCustomer);
-      return newCustomer;
+      await customersService.create(customer);
+      // Refetch to get updated list from server
+      await fetchCustomers();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to create customer';
@@ -443,12 +428,9 @@ export const useConfigurationStore = defineStore('configuration', () => {
     loading.value = true;
     error.value = null;
     try {
-      const updated = await customersService.update(id, customer);
-      const index = customers.value.findIndex((c) => c.id === id);
-      if (index !== -1) {
-        customers.value[index] = updated;
-      }
-      return updated;
+      await customersService.update(id, customer);
+      // Refetch to get updated list from server
+      await fetchCustomers();
     } catch (err) {
       error.value =
         err instanceof Error ? err.message : 'Failed to update customer';

@@ -4,6 +4,7 @@ import { useAuthStore } from '../stores/auth';
 import Configuration from '../views/Configuration.vue';
 import Dashboard from '../views/Dashboard.vue';
 import Login from '../views/Login.vue';
+import ThirdParties from '../views/ThirdParties.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,18 @@ const router = createRouter({
       path: '/configuration/:tab',
       name: 'configuration',
       component: Configuration,
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/third-parties',
+      redirect: '/third-parties/suppliers',
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/third-parties/:tab',
+      name: 'third-parties',
+      component: ThirdParties,
       props: true,
       meta: { requiresAuth: true },
     },

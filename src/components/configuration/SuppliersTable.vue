@@ -1,60 +1,119 @@
 <template>
   <div>
-    <DataTable title="Suppliers" :columns="columns" :data="configStore.suppliers" :loading="configStore.loading"
-      :error="configStore.error" :get-row-id="(row) => row.id" @create="showCreateModal = true" @edit="handleEdit"
-      @delete="handleDelete" />
-    <Modal :is-open="showModal" :title="editingSupplier ? 'Edit Supplier' : 'Create Supplier'" :show-footer="true"
-      @close="closeModal">
+    <DataTable
+      title="Suppliers"
+      :columns="columns"
+      :data="configStore.suppliers"
+      :loading="configStore.loading"
+      :error="configStore.error"
+      :get-row-id="(row) => row.id"
+      @create="showCreateModal = true"
+      @edit="handleEdit"
+      @delete="handleDelete"
+    />
+    <Modal
+      :is-open="showModal"
+      :title="editingSupplier ? 'Edit Supplier' : 'Create Supplier'"
+      :show-footer="true"
+      @close="closeModal"
+    >
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-            <input v-model="formData.first_name" type="text" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >First Name</label
+            >
+            <input
+              v-model="formData.first_name"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-            <input v-model="formData.last_name" type="text" required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Last Name</label
+            >
+            <input
+              v-model="formData.last_name"
+              type="text"
+              required
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <input v-model="formData.email" type="email" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Email</label
+          >
+          <input
+            v-model="formData.email"
+            type="email"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-          <input v-model="formData.phone_number" type="tel" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Phone Number</label
+          >
+          <input
+            v-model="formData.phone_number"
+            type="tel"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <select v-model="formData.status" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none">
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Status</label
+          >
+          <select
+            v-model="formData.status"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="pending">Pending</option>
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-          <textarea v-model="formData.address" rows="3" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"></textarea>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Address</label
+          >
+          <textarea
+            v-model="formData.address"
+            rows="3"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          ></textarea>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
-          <input v-model="formData.state" type="text" required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" />
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >State</label
+          >
+          <input
+            v-model="formData.state"
+            type="text"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          />
         </div>
       </form>
       <template #footer>
-        <button type="button" @click="closeModal"
-          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors">
+        <button
+          type="button"
+          @click="closeModal"
+          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+        >
           Cancel
         </button>
-        <button type="button" @click="handleSubmit"
-          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+        <button
+          type="button"
+          @click="handleSubmit"
+          class="px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+        >
           {{ editingSupplier ? 'Update' : 'Create' }}
         </button>
       </template>

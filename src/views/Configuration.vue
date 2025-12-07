@@ -7,17 +7,12 @@
 
     <div class="border-b border-gray-200">
       <nav class="-mb-px flex space-x-8">
-        <router-link
-          v-for="tab in tabs"
-          :key="tab.id"
-          :to="`/configuration/${tab.id}`"
-          :class="[
-            'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
-            activeTab === tab.id
-              ? 'border-blue-500 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-          ]"
-        >
+        <router-link v-for="tab in tabs" :key="tab.id" :to="`/configuration/${tab.id}`" :class="[
+          'py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+          activeTab === tab.id
+            ? 'border-blue-500 text-blue-600'
+            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+        ]">
           {{ tab.label }}
         </router-link>
       </nav>
@@ -28,8 +23,6 @@
       <ColorsTable v-if="activeTab === 'colors'" />
       <SizesTable v-if="activeTab === 'sizes'" />
       <UnitsTable v-if="activeTab === 'units'" />
-      <SuppliersTable v-if="activeTab === 'suppliers'" />
-      <CustomersTable v-if="activeTab === 'customers'" />
     </div>
   </div>
 </template>
@@ -39,10 +32,8 @@ import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import ColorsTable from '../components/configuration/ColorsTable.vue';
-import CustomersTable from '../components/configuration/CustomersTable.vue';
 import ProductsTable from '../components/configuration/ProductsTable.vue';
 import SizesTable from '../components/configuration/SizesTable.vue';
-import SuppliersTable from '../components/configuration/SuppliersTable.vue';
 import UnitsTable from '../components/configuration/UnitsTable.vue';
 
 const route = useRoute();
@@ -53,8 +44,6 @@ const tabs = [
   { id: 'colors', label: 'Colors' },
   { id: 'sizes', label: 'Sizes' },
   { id: 'units', label: 'Units' },
-  { id: 'suppliers', label: 'Suppliers' },
-  { id: 'customers', label: 'Customers' },
 ];
 
 const activeTab = computed(() => {
