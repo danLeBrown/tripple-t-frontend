@@ -32,44 +32,72 @@
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           >
-            <option value="preform">Preform</option>
-            <option value="cap">Cap</option>
-            <option value="bottle">Bottle</option>
+            <option value="Bottle">Bottle</option>
+            <option value="Cap">Cap</option>
+            <option value="Preform">Preform</option>
+            <option value="Nylon">Nylon</option>
+            <option value="Other">Other</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
             >Size</label
           >
-          <input
+          <select
             v-model.number="formData.size"
-            type="number"
             required
-            step="0.01"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
+            :disabled="loadingOptions"
+          >
+            <option value="">Select a size</option>
+            <option
+              v-for="size in sortedSizes"
+              :key="size.id"
+              :value="size.value"
+            >
+              {{ size.value }}
+            </option>
+          </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
             >Colour</label
           >
-          <input
+          <select
             v-model="formData.colour"
-            type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
+            :disabled="loadingOptions"
+          >
+            <option value="">Select a colour</option>
+            <option
+              v-for="color in sortedColors"
+              :key="color.id"
+              :value="color.name"
+            >
+              {{ color.name }}
+            </option>
+          </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1"
             >Unit</label
           >
-          <input
+          <select
             v-model="formData.unit"
-            type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
+            :disabled="loadingOptions"
+          >
+            <option value="">Select a unit</option>
+            <option
+              v-for="unit in sortedUnits"
+              :key="unit.id"
+              :value="unit.name"
+            >
+              {{ unit.name }} ({{ unit.symbol }})
+            </option>
+          </select>
         </div>
       </form>
       <template #footer>
@@ -116,7 +144,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 import { useAlertStore } from '../../stores/alert';
 import { useConfigurationStore } from '../../stores/configuration';
@@ -132,6 +160,7 @@ const editingProduct = ref<Product | null>(null);
 const isSubmitting = ref(false);
 const searchQuery = ref('');
 const currentPage = ref(0);
+const loadingOptions = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const formData = reactive({
@@ -153,9 +182,39 @@ const columns = [
   { key: 'unit', label: 'Unit' },
 ];
 
-onMounted(() => {
-  configStore.fetchProducts();
+// Computed properties for sorted options
+const sortedSizes = computed(() => {
+  return [...configStore.sizes].sort((a, b) => a.value - b.value);
 });
+
+const sortedColors = computed(() => {
+  return [...configStore.colors].sort((a, b) => a.name.localeCompare(b.name));
+});
+
+const sortedUnits = computed(() => {
+  return [...configStore.units].sort((a, b) => a.name.localeCompare(b.name));
+});
+
+onMounted(async () => {
+  await configStore.fetchProducts();
+  // Fetch options for dropdowns
+  await loadOptions();
+});
+
+async function loadOptions() {
+  loadingOptions.value = true;
+  try {
+    await Promise.all([
+      configStore.fetchSizes(),
+      configStore.fetchColors(),
+      configStore.fetchUnits(),
+    ]);
+  } catch (error) {
+    console.error('Failed to load options:', error);
+  } finally {
+    loadingOptions.value = false;
+  }
+}
 
 function handleSearch(query: string) {
   searchQuery.value = query;
@@ -246,14 +305,36 @@ async function handleSubmit() {
 }
 
 // Watch for create modal trigger
-watch(showCreateModal, (val) => {
+watch(showCreateModal, async (val) => {
   if (val) {
+    // Ensure options are loaded before showing modal
+    if (
+      configStore.sizes.length === 0 ||
+      configStore.colors.length === 0 ||
+      configStore.units.length === 0
+    ) {
+      await loadOptions();
+    }
     showModal.value = true;
     editingProduct.value = null;
     formData.type = 'preform';
     formData.size = 0;
     formData.colour = '';
     formData.unit = '';
+  }
+});
+
+// Also load options when edit modal opens
+watch(showModal, async (val) => {
+  if (val && editingProduct.value === null) {
+    // This is for create, ensure options are loaded
+    if (
+      configStore.sizes.length === 0 ||
+      configStore.colors.length === 0 ||
+      configStore.units.length === 0
+    ) {
+      await loadOptions();
+    }
   }
 });
 </script>
