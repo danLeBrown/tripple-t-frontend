@@ -17,8 +17,8 @@ export const useAlertStore = defineStore('alert', () => {
     const id = Math.random().toString(36).substring(2, 15);
     const newAlert: Alert = {
       id,
-      duration: alert.duration ?? 5000, // Default 5 seconds
       ...alert,
+      duration: alert.duration ?? 5000, // Default 5 seconds (must come after spread to override)
     };
 
     alerts.value.push(newAlert);
