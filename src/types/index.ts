@@ -30,21 +30,44 @@ export interface Unit extends BaseEntity {
   slug: string;
 }
 
-// Note: Supplier and Customer DTOs not provided, keeping existing structure
-// but updating to use snake_case and Unix timestamps
+export type SupplierStatus = 'active' | 'inactive' | 'pending';
+export type CustomerStatus = 'active' | 'inactive' | 'pending';
+
 export interface Supplier extends BaseEntity {
-  name: string;
-  contact_person?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  status: SupplierStatus;
+  address: string;
+  state: string;
 }
 
 export interface Customer extends BaseEntity {
-  name: string;
-  contact_person?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  status: CustomerStatus;
+  address: string;
+  state: string;
+}
+
+// Pagination and Search types
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  limit: number;
+  page: number;
+}
+
+export interface SearchParams {
+  query?: string;
+  limit?: number;
+  page?: number;
+  order_by?: string;
+  order_direction?: 'asc' | 'desc';
+  from_time?: number;
+  to_time?: number;
 }
 

@@ -1,13 +1,13 @@
 import baseApi from './base.api';
-import type { Colour } from '../types';
+import type { Colour, PaginatedResponse, SearchParams } from '../types';
 
 class ColorsService {
   private get api() {
     return baseApi.api;
   }
 
-  async getAll(): Promise<Colour[]> {
-    const response = await this.api.get('/colors');
+  async search(params?: SearchParams): Promise<PaginatedResponse<Colour>> {
+    const response = await this.api.get('/colors/search', { params });
     return response.data;
   }
 
@@ -16,7 +16,7 @@ class ColorsService {
     return response.data;
   }
 
-  async create(colour: Omit<Colour, 'id' | 'created_at' | 'updated_at'>): Promise<Colour> {
+  async create(colour: Omit<Colour, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<Colour> {
     const response = await this.api.post('/colors', colour);
     return response.data;
   }

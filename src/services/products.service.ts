@@ -1,13 +1,13 @@
 import baseApi from './base.api';
-import type { Product } from '../types';
+import type { Product, PaginatedResponse, SearchParams } from '../types';
 
 class ProductsService {
   private get api() {
     return baseApi.api;
   }
 
-  async getAll(): Promise<Product[]> {
-    const response = await this.api.get('/products');
+  async search(params?: SearchParams): Promise<PaginatedResponse<Product>> {
+    const response = await this.api.get('/products/search', { params });
     return response.data;
   }
 

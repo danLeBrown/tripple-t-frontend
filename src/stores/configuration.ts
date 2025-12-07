@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { Product, Colour, Size, Unit, Supplier, Customer } from '../types';
+import type { Product, Colour, Size, Unit, Supplier, Customer, SearchParams } from '../types';
 import productsService from '../services/products.service';
 import colorsService from '../services/colors.service';
 import sizesService from '../services/sizes.service';
@@ -10,21 +10,34 @@ import customersService from '../services/customers.service';
 
 export const useConfigurationStore = defineStore('configuration', () => {
   const products = ref<Product[]>([]);
-  const colors = ref<Color[]>([]);
+  const colors = ref<Colour[]>([]);
   const sizes = ref<Size[]>([]);
   const units = ref<Unit[]>([]);
   const suppliers = ref<Supplier[]>([]);
   const customers = ref<Customer[]>([]);
 
+  // Pagination metadata
+  const pagination = ref({
+    total: 0,
+    limit: 10,
+    page: 0,
+  });
+
   const loading = ref(false);
   const error = ref<string | null>(null);
 
   // Products
-  async function fetchProducts() {
+  async function fetchProducts(params?: SearchParams) {
     loading.value = true;
     error.value = null;
     try {
-      products.value = await productsService.getAll();
+      const response = await productsService.search(params);
+      products.value = response.data;
+      pagination.value = {
+        total: response.total,
+        limit: response.limit,
+        page: response.page,
+      };
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch products';
       throw err;
@@ -81,11 +94,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
   }
 
   // Colors
-  async function fetchColors() {
+  async function fetchColors(params?: SearchParams) {
     loading.value = true;
     error.value = null;
     try {
-      colors.value = await colorsService.getAll();
+      const response = await colorsService.search(params);
+      colors.value = response.data;
+      pagination.value = {
+        total: response.total,
+        limit: response.limit,
+        page: response.page,
+      };
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch colors';
       throw err;
@@ -94,7 +113,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function createColor(colour: Omit<Colour, 'id' | 'created_at' | 'updated_at'>) {
+  async function createColor(colour: Omit<Colour, 'id' | 'created_at' | 'updated_at' | 'slug'>) {
     loading.value = true;
     error.value = null;
     try {
@@ -109,7 +128,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function updateColor(id: string, color: Partial<Color>) {
+  async function updateColor(id: string, color: Partial<Colour>) {
     loading.value = true;
     error.value = null;
     try {
@@ -142,11 +161,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
   }
 
   // Sizes
-  async function fetchSizes() {
+  async function fetchSizes(params?: SearchParams) {
     loading.value = true;
     error.value = null;
     try {
-      sizes.value = await sizesService.getAll();
+      const response = await sizesService.search(params);
+      sizes.value = response.data;
+      pagination.value = {
+        total: response.total,
+        limit: response.limit,
+        page: response.page,
+      };
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch sizes';
       throw err;
@@ -203,11 +228,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
   }
 
   // Units
-  async function fetchUnits() {
+  async function fetchUnits(params?: SearchParams) {
     loading.value = true;
     error.value = null;
     try {
-      units.value = await unitsService.getAll();
+      const response = await unitsService.search(params);
+      units.value = response.data;
+      pagination.value = {
+        total: response.total,
+        limit: response.limit,
+        page: response.page,
+      };
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch units';
       throw err;
@@ -264,11 +295,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
   }
 
   // Suppliers
-  async function fetchSuppliers() {
+  async function fetchSuppliers(params?: SearchParams) {
     loading.value = true;
     error.value = null;
     try {
-      suppliers.value = await suppliersService.getAll();
+      const response = await suppliersService.search(params);
+      suppliers.value = response.data;
+      pagination.value = {
+        total: response.total,
+        limit: response.limit,
+        page: response.page,
+      };
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch suppliers';
       throw err;
@@ -325,11 +362,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
   }
 
   // Customers
-  async function fetchCustomers() {
+  async function fetchCustomers(params?: SearchParams) {
     loading.value = true;
     error.value = null;
     try {
-      customers.value = await customersService.getAll();
+      const response = await customersService.search(params);
+      customers.value = response.data;
+      pagination.value = {
+        total: response.total,
+        limit: response.limit,
+        page: response.page,
+      };
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch customers';
       throw err;
@@ -392,6 +435,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     units,
     suppliers,
     customers,
+    pagination,
     loading,
     error,
     fetchProducts,

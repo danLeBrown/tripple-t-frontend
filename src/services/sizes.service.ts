@@ -1,13 +1,13 @@
 import baseApi from './base.api';
-import type { Size } from '../types';
+import type { Size, PaginatedResponse, SearchParams } from '../types';
 
 class SizesService {
   private get api() {
     return baseApi.api;
   }
 
-  async getAll(): Promise<Size[]> {
-    const response = await this.api.get('/sizes');
+  async search(params?: SearchParams): Promise<PaginatedResponse<Size>> {
+    const response = await this.api.get('/sizes/search', { params });
     return response.data;
   }
 
