@@ -1,5 +1,5 @@
+import type { PaginatedResponse, SearchParams, Size } from '../types';
 import baseApi from './base.api';
-import type { Size, PaginatedResponse, SearchParams } from '../types';
 
 class SizesService {
   private get api() {
@@ -16,12 +16,17 @@ class SizesService {
     return response.data;
   }
 
-  async create(size: Omit<Size, 'id' | 'created_at' | 'updated_at'>): Promise<Size> {
+  async create(
+    size: Omit<Size, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<Size> {
     const response = await this.api.post('/sizes', size);
     return response.data;
   }
 
-  async update(id: string, size: Partial<Omit<Size, 'id' | 'created_at' | 'updated_at'>>): Promise<Size> {
+  async update(
+    id: string,
+    size: Partial<Omit<Size, 'id' | 'created_at' | 'updated_at'>>,
+  ): Promise<Size> {
     const response = await this.api.patch(`/sizes/${id}`, size);
     return response.data;
   }
@@ -32,4 +37,3 @@ class SizesService {
 }
 
 export default new SizesService();
-

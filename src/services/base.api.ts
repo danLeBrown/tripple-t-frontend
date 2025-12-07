@@ -1,8 +1,13 @@
 import axios, { type AxiosInstance } from 'axios';
+
 import { useAuthStore } from '../stores/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://staging-api.danlebrown.com/tripple-t/v1';
-const API_APP_BASE_URL = import.meta.env.VITE_API_APP_BASE_URL || 'https://staging-api.danlebrown.com/tripple-t';
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  'https://staging-api.danlebrown.com/tripple-t/v1';
+const API_APP_BASE_URL =
+  import.meta.env.VITE_API_APP_BASE_URL ||
+  'https://staging-api.danlebrown.com/tripple-t';
 
 class BaseApiService {
   public readonly api: AxiosInstance;
@@ -33,7 +38,7 @@ class BaseApiService {
     this.api.interceptors.request.use(
       async (config) => {
         const authStore = useAuthStore();
-        
+
         // Add CSRF token to all requests
         if (authStore.csrfToken) {
           config.headers['X-CSRF-TOKEN'] = authStore.csrfToken;
@@ -41,14 +46,12 @@ class BaseApiService {
 
         // Add JWT token if available
         if (authStore.jwtToken) {
-          config.headers['Authorization'] = `Bearer ${authStore.jwtToken}`;
+          config.headers.Authorization = `Bearer ${authStore.jwtToken}`;
         }
 
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error),
     );
 
     // Response interceptor to handle errors
@@ -61,7 +64,7 @@ class BaseApiService {
           authStore.logout();
         }
         return Promise.reject(error);
-      }
+      },
     );
   }
 
@@ -72,11 +75,13 @@ class BaseApiService {
   }
 
   // Auth
-  async login(credentials: { email: string; password: string }): Promise<{ token: string }> {
+  async login(credentials: {
+    email: string;
+    password: string;
+  }): Promise<{ token: string }> {
     const response = await this.api.post('/auth/login', credentials);
     return response.data;
   }
 }
 
 export default new BaseApiService();
-

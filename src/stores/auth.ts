@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+
 import baseApi from '../services/base.api';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -30,7 +31,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // Login with credentials
-  async function login(credentials: { email: string; password: string }): Promise<void> {
+  async function login(credentials: {
+    email: string;
+    password: string;
+  }): Promise<void> {
     try {
       // Ensure we have CSRF token before login
       if (!csrfToken.value) {
@@ -40,7 +44,7 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await baseApi.login(credentials);
       jwtToken.value = response.token;
       isAuthenticated.value = true;
-      
+
       // Store JWT in localStorage
       if (response.token) {
         localStorage.setItem('jwt_token', response.token);
@@ -80,4 +84,3 @@ export const useAuthStore = defineStore('auth', () => {
     initializeAuth,
   };
 });
-

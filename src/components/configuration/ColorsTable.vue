@@ -18,7 +18,9 @@
     >
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Name</label
+          >
           <input
             v-model="formData.name"
             type="text"
@@ -48,11 +50,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
-import DataTable from '../common/DataTable.vue';
-import Modal from '../common/Modal.vue';
+import { onMounted, reactive, ref, watch } from 'vue';
+
 import { useConfigurationStore } from '../../stores/configuration';
 import type { Colour } from '../../types';
+import DataTable from '../common/DataTable.vue';
+import Modal from '../common/Modal.vue';
 
 const configStore = useConfigurationStore();
 const showModal = ref(false);
@@ -112,4 +115,3 @@ watch(showCreateModal, (val) => {
   }
 });
 </script>
-

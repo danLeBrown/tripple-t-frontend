@@ -70,4 +70,3 @@ export interface SearchParams {
   from_time?: number;
   to_time?: number;
 }
-

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Dashboard from '../views/Dashboard.vue';
+
 import Configuration from '../views/Configuration.vue';
+import Dashboard from '../views/Dashboard.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,4 +25,3 @@ const router = createRouter({
 });
 
 export default router;
-

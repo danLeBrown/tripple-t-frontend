@@ -13,7 +13,9 @@
         Dashboard
       </router-link>
       <div class="mt-4">
-        <div class="px-6 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+        <div
+          class="px-6 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider"
+        >
           Configuration
         </div>
         <router-link
@@ -63,6 +65,4 @@
   </aside>
 </template>
 
-<script setup lang="ts">
-</script>
-
+<script setup lang="ts"></script>

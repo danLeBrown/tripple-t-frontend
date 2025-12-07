@@ -16,8 +16,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import Sidebar from './Sidebar.vue';
+
 import Header from './Header.vue';
+import Sidebar from './Sidebar.vue';
 
 defineProps<{
   title?: string;
@@ -25,4 +26,3 @@ defineProps<{
 
 const searchQuery = ref('');
 </script>
-

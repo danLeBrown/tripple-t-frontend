@@ -1,5 +1,5 @@
-import baseApi from './base.api';
 import type { Customer, PaginatedResponse, SearchParams } from '../types';
+import baseApi from './base.api';
 
 class CustomersService {
   private get api() {
@@ -16,12 +16,17 @@ class CustomersService {
     return response.data;
   }
 
-  async create(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>): Promise<Customer> {
+  async create(
+    customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>,
+  ): Promise<Customer> {
     const response = await this.api.post('/customers', customer);
     return response.data;
   }
 
-  async update(id: string, customer: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>): Promise<Customer> {
+  async update(
+    id: string,
+    customer: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>,
+  ): Promise<Customer> {
     const response = await this.api.patch(`/customers/${id}`, customer);
     return response.data;
   }
@@ -32,4 +37,3 @@ class CustomersService {
 }
 
 export default new CustomersService();
-

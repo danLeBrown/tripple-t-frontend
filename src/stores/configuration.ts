@@ -1,12 +1,21 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { Product, Colour, Size, Unit, Supplier, Customer, SearchParams } from '../types';
-import productsService from '../services/products.service';
+
 import colorsService from '../services/colors.service';
-import sizesService from '../services/sizes.service';
-import unitsService from '../services/units.service';
-import suppliersService from '../services/suppliers.service';
 import customersService from '../services/customers.service';
+import productsService from '../services/products.service';
+import sizesService from '../services/sizes.service';
+import suppliersService from '../services/suppliers.service';
+import unitsService from '../services/units.service';
+import type {
+  Colour,
+  Customer,
+  Product,
+  SearchParams,
+  Size,
+  Supplier,
+  Unit,
+} from '../types';
 
 export const useConfigurationStore = defineStore('configuration', () => {
   const products = ref<Product[]>([]);
@@ -39,14 +48,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
         page: response.page,
       };
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch products';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to fetch products';
       throw err;
     } finally {
       loading.value = false;
     }
   }
 
-  async function createProduct(product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>) {
+  async function createProduct(
+    product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+  ) {
     loading.value = true;
     error.value = null;
     try {
@@ -54,7 +66,8 @@ export const useConfigurationStore = defineStore('configuration', () => {
       products.value.push(newProduct);
       return newProduct;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create product';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to create product';
       throw err;
     } finally {
       loading.value = false;
@@ -66,13 +79,14 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       const updated = await productsService.update(id, product);
-      const index = products.value.findIndex(p => p.id === id);
+      const index = products.value.findIndex((p) => p.id === id);
       if (index !== -1) {
         products.value[index] = updated;
       }
       return updated;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update product';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to update product';
       throw err;
     } finally {
       loading.value = false;
@@ -84,9 +98,10 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       await productsService.delete(id);
-      products.value = products.value.filter(p => p.id !== id);
+      products.value = products.value.filter((p) => p.id !== id);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to delete product';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to delete product';
       throw err;
     } finally {
       loading.value = false;
@@ -106,14 +121,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
         page: response.page,
       };
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch colors';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to fetch colors';
       throw err;
     } finally {
       loading.value = false;
     }
   }
 
-  async function createColor(colour: Omit<Colour, 'id' | 'created_at' | 'updated_at' | 'slug'>) {
+  async function createColor(
+    colour: Omit<Colour, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+  ) {
     loading.value = true;
     error.value = null;
     try {
@@ -121,7 +139,8 @@ export const useConfigurationStore = defineStore('configuration', () => {
       colors.value.push(newColor);
       return newColor;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create color';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to create color';
       throw err;
     } finally {
       loading.value = false;
@@ -133,13 +152,14 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       const updated = await colorsService.update(id, color);
-      const index = colors.value.findIndex(c => c.id === id);
+      const index = colors.value.findIndex((c) => c.id === id);
       if (index !== -1) {
         colors.value[index] = updated;
       }
       return updated;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update color';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to update color';
       throw err;
     } finally {
       loading.value = false;
@@ -151,9 +171,10 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       await colorsService.delete(id);
-      colors.value = colors.value.filter(c => c.id !== id);
+      colors.value = colors.value.filter((c) => c.id !== id);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to delete color';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to delete color';
       throw err;
     } finally {
       loading.value = false;
@@ -173,14 +194,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
         page: response.page,
       };
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch sizes';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to fetch sizes';
       throw err;
     } finally {
       loading.value = false;
     }
   }
 
-  async function createSize(size: Omit<Size, 'id' | 'created_at' | 'updated_at'>) {
+  async function createSize(
+    size: Omit<Size, 'id' | 'created_at' | 'updated_at'>,
+  ) {
     loading.value = true;
     error.value = null;
     try {
@@ -188,7 +212,8 @@ export const useConfigurationStore = defineStore('configuration', () => {
       sizes.value.push(newSize);
       return newSize;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create size';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to create size';
       throw err;
     } finally {
       loading.value = false;
@@ -200,13 +225,14 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       const updated = await sizesService.update(id, size);
-      const index = sizes.value.findIndex(s => s.id === id);
+      const index = sizes.value.findIndex((s) => s.id === id);
       if (index !== -1) {
         sizes.value[index] = updated;
       }
       return updated;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update size';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to update size';
       throw err;
     } finally {
       loading.value = false;
@@ -218,9 +244,10 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       await sizesService.delete(id);
-      sizes.value = sizes.value.filter(s => s.id !== id);
+      sizes.value = sizes.value.filter((s) => s.id !== id);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to delete size';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to delete size';
       throw err;
     } finally {
       loading.value = false;
@@ -240,14 +267,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
         page: response.page,
       };
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch units';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to fetch units';
       throw err;
     } finally {
       loading.value = false;
     }
   }
 
-  async function createUnit(unit: Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>) {
+  async function createUnit(
+    unit: Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+  ) {
     loading.value = true;
     error.value = null;
     try {
@@ -255,7 +285,8 @@ export const useConfigurationStore = defineStore('configuration', () => {
       units.value.push(newUnit);
       return newUnit;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create unit';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to create unit';
       throw err;
     } finally {
       loading.value = false;
@@ -267,13 +298,14 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       const updated = await unitsService.update(id, unit);
-      const index = units.value.findIndex(u => u.id === id);
+      const index = units.value.findIndex((u) => u.id === id);
       if (index !== -1) {
         units.value[index] = updated;
       }
       return updated;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update unit';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to update unit';
       throw err;
     } finally {
       loading.value = false;
@@ -285,9 +317,10 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       await unitsService.delete(id);
-      units.value = units.value.filter(u => u.id !== id);
+      units.value = units.value.filter((u) => u.id !== id);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to delete unit';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to delete unit';
       throw err;
     } finally {
       loading.value = false;
@@ -307,14 +340,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
         page: response.page,
       };
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch suppliers';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to fetch suppliers';
       throw err;
     } finally {
       loading.value = false;
     }
   }
 
-  async function createSupplier(supplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at'>) {
+  async function createSupplier(
+    supplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at'>,
+  ) {
     loading.value = true;
     error.value = null;
     try {
@@ -322,7 +358,8 @@ export const useConfigurationStore = defineStore('configuration', () => {
       suppliers.value.push(newSupplier);
       return newSupplier;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create supplier';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to create supplier';
       throw err;
     } finally {
       loading.value = false;
@@ -334,13 +371,14 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       const updated = await suppliersService.update(id, supplier);
-      const index = suppliers.value.findIndex(s => s.id === id);
+      const index = suppliers.value.findIndex((s) => s.id === id);
       if (index !== -1) {
         suppliers.value[index] = updated;
       }
       return updated;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update supplier';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to update supplier';
       throw err;
     } finally {
       loading.value = false;
@@ -352,9 +390,10 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       await suppliersService.delete(id);
-      suppliers.value = suppliers.value.filter(s => s.id !== id);
+      suppliers.value = suppliers.value.filter((s) => s.id !== id);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to delete supplier';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to delete supplier';
       throw err;
     } finally {
       loading.value = false;
@@ -374,14 +413,17 @@ export const useConfigurationStore = defineStore('configuration', () => {
         page: response.page,
       };
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch customers';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to fetch customers';
       throw err;
     } finally {
       loading.value = false;
     }
   }
 
-  async function createCustomer(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) {
+  async function createCustomer(
+    customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>,
+  ) {
     loading.value = true;
     error.value = null;
     try {
@@ -389,7 +431,8 @@ export const useConfigurationStore = defineStore('configuration', () => {
       customers.value.push(newCustomer);
       return newCustomer;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create customer';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to create customer';
       throw err;
     } finally {
       loading.value = false;
@@ -401,13 +444,14 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       const updated = await customersService.update(id, customer);
-      const index = customers.value.findIndex(c => c.id === id);
+      const index = customers.value.findIndex((c) => c.id === id);
       if (index !== -1) {
         customers.value[index] = updated;
       }
       return updated;
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update customer';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to update customer';
       throw err;
     } finally {
       loading.value = false;
@@ -419,9 +463,10 @@ export const useConfigurationStore = defineStore('configuration', () => {
     error.value = null;
     try {
       await customersService.delete(id);
-      customers.value = customers.value.filter(c => c.id !== id);
+      customers.value = customers.value.filter((c) => c.id !== id);
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to delete customer';
+      error.value =
+        err instanceof Error ? err.message : 'Failed to delete customer';
       throw err;
     } finally {
       loading.value = false;
@@ -464,4 +509,3 @@ export const useConfigurationStore = defineStore('configuration', () => {
     deleteCustomer,
   };
 });
-

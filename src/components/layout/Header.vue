@@ -25,4 +25,3 @@ defineEmits<{
   'update:searchQuery': [value: string];
 }>();
 </script>
-

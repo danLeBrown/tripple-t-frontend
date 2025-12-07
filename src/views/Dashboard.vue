@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import { useConfigurationStore } from '../stores/configuration';
 
 const configStore = useConfigurationStore();
@@ -28,4 +29,3 @@ const productCount = computed(() => configStore.products.length);
 const supplierCount = computed(() => configStore.suppliers.length);
 const customerCount = computed(() => configStore.customers.length);
 </script>
-

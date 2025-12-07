@@ -1,5 +1,5 @@
+import type { PaginatedResponse, Product, SearchParams } from '../types';
 import baseApi from './base.api';
-import type { Product, PaginatedResponse, SearchParams } from '../types';
 
 class ProductsService {
   private get api() {
@@ -16,12 +16,19 @@ class ProductsService {
     return response.data;
   }
 
-  async create(product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<Product> {
+  async create(
+    product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+  ): Promise<Product> {
     const response = await this.api.post('/products', product);
     return response.data;
   }
 
-  async update(id: string, product: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>>): Promise<Product> {
+  async update(
+    id: string,
+    product: Partial<
+      Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>
+    >,
+  ): Promise<Product> {
     const response = await this.api.patch(`/products/${id}`, product);
     return response.data;
   }
@@ -32,4 +39,3 @@ class ProductsService {
 }
 
 export default new ProductsService();
-

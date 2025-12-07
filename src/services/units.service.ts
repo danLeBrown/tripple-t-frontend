@@ -1,5 +1,5 @@
+import type { PaginatedResponse, SearchParams, Unit } from '../types';
 import baseApi from './base.api';
-import type { Unit, PaginatedResponse, SearchParams } from '../types';
 
 class UnitsService {
   private get api() {
@@ -16,12 +16,17 @@ class UnitsService {
     return response.data;
   }
 
-  async create(unit: Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<Unit> {
+  async create(
+    unit: Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+  ): Promise<Unit> {
     const response = await this.api.post('/units', unit);
     return response.data;
   }
 
-  async update(id: string, unit: Partial<Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>>): Promise<Unit> {
+  async update(
+    id: string,
+    unit: Partial<Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>>,
+  ): Promise<Unit> {
     const response = await this.api.patch(`/units/${id}`, unit);
     return response.data;
   }
@@ -32,4 +37,3 @@ class UnitsService {
 }
 
 export default new UnitsService();
-

@@ -18,7 +18,9 @@
     >
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Value</label
+          >
           <input
             v-model.number="formData.value"
             type="number"
@@ -49,11 +51,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
-import DataTable from '../common/DataTable.vue';
-import Modal from '../common/Modal.vue';
+import { onMounted, reactive, ref, watch } from 'vue';
+
 import { useConfigurationStore } from '../../stores/configuration';
 import type { Size } from '../../types';
+import DataTable from '../common/DataTable.vue';
+import Modal from '../common/Modal.vue';
 
 const configStore = useConfigurationStore();
 const showModal = ref(false);
@@ -64,9 +67,7 @@ const formData = reactive({
   value: 0,
 });
 
-const columns = [
-  { key: 'value', label: 'Value' },
-];
+const columns = [{ key: 'value', label: 'Value' }];
 
 onMounted(() => {
   configStore.fetchSizes();
@@ -79,7 +80,9 @@ function handleEdit(size: Size) {
 }
 
 function handleDelete(size: Size) {
-  if (confirm(`Are you sure you want to delete size with value "${size.value}"?`)) {
+  if (
+    confirm(`Are you sure you want to delete size with value "${size.value}"?`)
+  ) {
     configStore.deleteSize(size.id);
   }
 }
@@ -112,4 +115,3 @@ watch(showCreateModal, (val) => {
   }
 });
 </script>
-

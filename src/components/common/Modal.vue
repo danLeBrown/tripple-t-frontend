@@ -6,22 +6,39 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
         @click.self="close"
       >
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div
+          class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        >
+          <div
+            class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+          >
             <h2 class="text-xl font-semibold text-gray-900">{{ title }}</h2>
             <button
               @click="close"
               class="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                class="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
           <div class="p-6">
             <slot />
           </div>
-          <div v-if="showFooter" class="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
+          <div
+            v-if="showFooter"
+            class="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3"
+          >
             <slot name="footer">
               <button
                 @click="close"
@@ -71,4 +88,3 @@ function close() {
   opacity: 0;
 }
 </style>
-

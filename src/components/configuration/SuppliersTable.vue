@@ -19,7 +19,9 @@
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >First Name</label
+            >
             <input
               v-model="formData.first_name"
               type="text"
@@ -28,7 +30,9 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Last Name</label
+            >
             <input
               v-model="formData.last_name"
               type="text"
@@ -38,7 +42,9 @@
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Email</label
+          >
           <input
             v-model="formData.email"
             type="email"
@@ -47,7 +53,9 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Phone Number</label
+          >
           <input
             v-model="formData.phone_number"
             type="tel"
@@ -56,7 +64,9 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Status</label
+          >
           <select
             v-model="formData.status"
             required
@@ -68,7 +78,9 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Address</label
+          >
           <textarea
             v-model="formData.address"
             rows="3"
@@ -77,7 +89,9 @@
           ></textarea>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >State</label
+          >
           <input
             v-model="formData.state"
             type="text"
@@ -107,11 +121,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
-import DataTable from '../common/DataTable.vue';
-import Modal from '../common/Modal.vue';
+import { onMounted, reactive, ref, watch } from 'vue';
+
 import { useConfigurationStore } from '../../stores/configuration';
 import type { Supplier, SupplierStatus } from '../../types';
+import DataTable from '../common/DataTable.vue';
+import Modal from '../common/Modal.vue';
 
 const configStore = useConfigurationStore();
 const showModal = ref(false);
@@ -154,7 +169,11 @@ function handleEdit(supplier: Supplier) {
 }
 
 function handleDelete(supplier: Supplier) {
-  if (confirm(`Are you sure you want to delete "${supplier.first_name} ${supplier.last_name}"?`)) {
+  if (
+    confirm(
+      `Are you sure you want to delete "${supplier.first_name} ${supplier.last_name}"?`,
+    )
+  ) {
     configStore.deleteSupplier(supplier.id);
   }
 }
@@ -199,4 +218,3 @@ watch(showCreateModal, (val) => {
   }
 });
 </script>
-

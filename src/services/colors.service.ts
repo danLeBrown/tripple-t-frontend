@@ -1,5 +1,5 @@
-import baseApi from './base.api';
 import type { Colour, PaginatedResponse, SearchParams } from '../types';
+import baseApi from './base.api';
 
 class ColorsService {
   private get api() {
@@ -16,12 +16,17 @@ class ColorsService {
     return response.data;
   }
 
-  async create(colour: Omit<Colour, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<Colour> {
+  async create(
+    colour: Omit<Colour, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+  ): Promise<Colour> {
     const response = await this.api.post('/colors', colour);
     return response.data;
   }
 
-  async update(id: string, colour: Partial<Omit<Colour, 'id' | 'created_at' | 'updated_at'>>): Promise<Colour> {
+  async update(
+    id: string,
+    colour: Partial<Omit<Colour, 'id' | 'created_at' | 'updated_at'>>,
+  ): Promise<Colour> {
     const response = await this.api.patch(`/colors/${id}`, colour);
     return response.data;
   }
@@ -32,4 +37,3 @@ class ColorsService {
 }
 
 export default new ColorsService();
-

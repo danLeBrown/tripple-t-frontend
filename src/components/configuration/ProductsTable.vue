@@ -18,7 +18,9 @@
     >
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Type</label
+          >
           <select
             v-model="formData.type"
             required
@@ -30,7 +32,9 @@
           </select>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Size</label
+          >
           <input
             v-model.number="formData.size"
             type="number"
@@ -40,7 +44,9 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Colour</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Colour</label
+          >
           <input
             v-model="formData.colour"
             type="text"
@@ -49,7 +55,9 @@
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1"
+            >Unit</label
+          >
           <input
             v-model="formData.unit"
             type="text"
@@ -79,11 +87,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue';
-import DataTable from '../common/DataTable.vue';
-import Modal from '../common/Modal.vue';
+import { onMounted, reactive, ref, watch } from 'vue';
+
 import { useConfigurationStore } from '../../stores/configuration';
 import type { Product, ProductType } from '../../types';
+import DataTable from '../common/DataTable.vue';
+import Modal from '../common/Modal.vue';
 
 const configStore = useConfigurationStore();
 const showModal = ref(false);
@@ -98,7 +107,12 @@ const formData = reactive({
 });
 
 const columns = [
-  { key: 'type', label: 'Type', format: (value: ProductType) => value.charAt(0).toUpperCase() + value.slice(1) },
+  {
+    key: 'type',
+    label: 'Type',
+    format: (value: ProductType) =>
+      value.charAt(0).toUpperCase() + value.slice(1),
+  },
   { key: 'size', label: 'Size' },
   { key: 'colour', label: 'Colour' },
   { key: 'unit', label: 'Unit' },
@@ -159,4 +173,3 @@ watch(showCreateModal, (val) => {
   }
 });
 </script>
-
