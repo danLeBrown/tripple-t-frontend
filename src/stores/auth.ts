@@ -4,24 +4,25 @@ import { ref } from 'vue';
 import baseApi from '../services/base.api';
 
 export const useAuthStore = defineStore('auth', () => {
-  const sessionKey = ref<string | null>(null);
+  const sessionId = ref<string | null>(null);
   const csrfToken = ref<string | null>(null);
   const jwtToken = ref<string | null>(null);
   const isAuthenticated = ref(false);
 
   // Initialize session key (can be set from external source)
-  function setSessionKey(key: string) {
-    sessionKey.value = key;
+  function setSessionId(id: string) {
+    sessionId.value = id;
   }
 
   // Fetch CSRF token using session key
   async function fetchCsrfToken(): Promise<string | null> {
-    if (!sessionKey.value) {
-      throw new Error('Session key is required to fetch CSRF token');
+    if (!sessionId.value) {
+      // set session key to a random string
+      sessionId.value = Math.random().toString(36).substring(2, 15);
     }
 
     try {
-      const response = await baseApi.getCsrfToken(sessionKey.value);
+      const response = await baseApi.getCsrfToken();
       csrfToken.value = response.token;
       return response.token;
     } catch (error) {
@@ -59,6 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
   function logout() {
     jwtToken.value = null;
     csrfToken.value = null;
+    sessionId.value = null;
     isAuthenticated.value = false;
     localStorage.removeItem('jwt_token');
   }
@@ -70,14 +72,19 @@ export const useAuthStore = defineStore('auth', () => {
       jwtToken.value = storedToken;
       isAuthenticated.value = true;
     }
+
+    // Initialize session ID if not already set (generate a new one)
+    if (!sessionId.value) {
+      sessionId.value = Math.random().toString(36).substring(2, 15);
+    }
   }
 
   return {
-    sessionKey,
+    sessionId,
     csrfToken,
     jwtToken,
     isAuthenticated,
-    setSessionKey,
+    setSessionId,
     fetchCsrfToken,
     login,
     logout,

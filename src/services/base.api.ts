@@ -34,13 +34,43 @@ class BaseApiService {
   }
 
   private setupInterceptors() {
-    // Request interceptor to add CSRF token and JWT
+    // Request interceptor for v1 API endpoints
     this.api.interceptors.request.use(
       async (config) => {
         const authStore = useAuthStore();
 
+        // Add Session ID to all requests
+        if (authStore.sessionId) {
+          config.headers['X-Session-ID'] = authStore.sessionId;
+        }
+
         // Add CSRF token to all requests
         if (authStore.csrfToken) {
+          config.headers['X-CSRF-TOKEN'] = authStore.csrfToken;
+        }
+
+        // Add JWT token if available
+        if (authStore.jwtToken) {
+          config.headers.Authorization = `Bearer ${authStore.jwtToken}`;
+        }
+
+        return config;
+      },
+      (error) => Promise.reject(error),
+    );
+
+    // Request interceptor for app API endpoints (CSRF, health, etc.)
+    this.appApi.interceptors.request.use(
+      async (config) => {
+        const authStore = useAuthStore();
+
+        // Add Session ID to all requests
+        if (authStore.sessionId) {
+          config.headers['X-Session-ID'] = authStore.sessionId;
+        }
+
+        // Add CSRF token to all requests (except when fetching CSRF token itself)
+        if (authStore.csrfToken && !config.url?.includes('/csrf-token')) {
           config.headers['X-CSRF-TOKEN'] = authStore.csrfToken;
         }
 
@@ -62,7 +92,7 @@ class BaseApiService {
           // Unauthorized - clear auth state and redirect to login
           const authStore = useAuthStore();
           const currentPath = window.location.pathname;
-          
+
           // Only redirect if not already on login page
           if (currentPath !== '/login') {
             authStore.logout();
@@ -81,9 +111,11 @@ class BaseApiService {
   }
 
   // CSRF Token
-  async getCsrfToken(sessionKey: string): Promise<{ token: string }> {
-    const response = await this.appApi.post('/csrf-token', { sessionKey });
-    return response.data;
+  // Note: X-Session-ID header is automatically added by the request interceptor
+  // The sessionId must be set in the auth store before calling this method
+  async getCsrfToken(): Promise<{ token: string }> {
+    const response = await this.appApi.get('/csrf-token');
+    return { token: response.data.data.csrf_token };
   }
 
   // Auth
@@ -92,7 +124,8 @@ class BaseApiService {
     password: string;
   }): Promise<{ token: string }> {
     const response = await this.api.post('/auth/login', credentials);
-    return response.data;
+    const token = response.data.data.access_token;
+    return { token };
   }
 }
 

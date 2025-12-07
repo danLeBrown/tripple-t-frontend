@@ -119,6 +119,7 @@ async function handleLogin() {
     const redirectTo = (route.query.redirect as string) || '/';
     router.push(redirectTo);
   } catch (err: any) {
+    console.error(err);
     error.value =
       err.response?.data?.message ||
       'Login failed. Please check your credentials.';
