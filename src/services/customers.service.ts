@@ -16,12 +16,12 @@ class CustomersService {
     return response.data;
   }
 
-  async create(customer: Omit<Customer, 'id'>): Promise<Customer> {
+  async create(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>): Promise<Customer> {
     const response = await this.api.post('/customers', customer);
     return response.data;
   }
 
-  async update(id: string, customer: Partial<Customer>): Promise<Customer> {
+  async update(id: string, customer: Partial<Omit<Customer, 'id' | 'created_at' | 'updated_at'>>): Promise<Customer> {
     const response = await this.api.patch(`/customers/${id}`, customer);
     return response.data;
   }

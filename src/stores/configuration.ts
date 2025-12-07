@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { Product, Color, Size, Unit, Supplier, Customer } from '../types';
+import type { Product, Colour, Size, Unit, Supplier, Customer } from '../types';
 import productsService from '../services/products.service';
 import colorsService from '../services/colors.service';
 import sizesService from '../services/sizes.service';
@@ -33,7 +33,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function createProduct(product: Omit<Product, 'id'>) {
+  async function createProduct(product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>) {
     loading.value = true;
     error.value = null;
     try {
@@ -94,11 +94,11 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function createColor(color: Omit<Color, 'id'>) {
+  async function createColor(colour: Omit<Colour, 'id' | 'created_at' | 'updated_at'>) {
     loading.value = true;
     error.value = null;
     try {
-      const newColor = await colorsService.create(color);
+      const newColor = await colorsService.create(colour);
       colors.value.push(newColor);
       return newColor;
     } catch (err) {
@@ -155,7 +155,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function createSize(size: Omit<Size, 'id'>) {
+  async function createSize(size: Omit<Size, 'id' | 'created_at' | 'updated_at'>) {
     loading.value = true;
     error.value = null;
     try {
@@ -216,7 +216,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function createUnit(unit: Omit<Unit, 'id'>) {
+  async function createUnit(unit: Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>) {
     loading.value = true;
     error.value = null;
     try {
@@ -277,7 +277,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function createSupplier(supplier: Omit<Supplier, 'id'>) {
+  async function createSupplier(supplier: Omit<Supplier, 'id' | 'created_at' | 'updated_at'>) {
     loading.value = true;
     error.value = null;
     try {
@@ -338,7 +338,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
     }
   }
 
-  async function createCustomer(customer: Omit<Customer, 'id'>) {
+  async function createCustomer(customer: Omit<Customer, 'id' | 'created_at' | 'updated_at'>) {
     loading.value = true;
     error.value = null;
     try {

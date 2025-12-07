@@ -29,7 +29,7 @@
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
           <input
-            v-model="formData.contactPerson"
+            v-model="formData.contact_person"
             type="text"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           />
@@ -93,7 +93,7 @@ const editingCustomer = ref<Customer | null>(null);
 
 const formData = reactive({
   name: '',
-  contactPerson: '',
+  contact_person: '',
   email: '',
   phone: '',
   address: '',
@@ -101,7 +101,7 @@ const formData = reactive({
 
 const columns = [
   { key: 'name', label: 'Name' },
-  { key: 'contactPerson', label: 'Contact Person' },
+  { key: 'contact_person', label: 'Contact Person' },
   { key: 'email', label: 'Email' },
   { key: 'phone', label: 'Phone' },
 ];
@@ -113,7 +113,7 @@ onMounted(() => {
 function handleEdit(customer: Customer) {
   editingCustomer.value = customer;
   formData.name = customer.name;
-  formData.contactPerson = customer.contactPerson || '';
+  formData.contact_person = customer.contact_person || '';
   formData.email = customer.email || '';
   formData.phone = customer.phone || '';
   formData.address = customer.address || '';
@@ -131,7 +131,7 @@ function closeModal() {
   showCreateModal.value = false;
   editingCustomer.value = null;
   formData.name = '';
-  formData.contactPerson = '';
+  formData.contact_person = '';
   formData.email = '';
   formData.phone = '';
   formData.address = '';
@@ -155,7 +155,7 @@ watch(showCreateModal, (val) => {
     showModal.value = true;
     editingCustomer.value = null;
     formData.name = '';
-    formData.contactPerson = '';
+    formData.contact_person = '';
     formData.email = '';
     formData.phone = '';
     formData.address = '';

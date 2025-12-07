@@ -26,15 +26,6 @@
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           />
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Hex Code</label>
-          <input
-            v-model="formData.hexCode"
-            type="text"
-            placeholder="#FFFFFF"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
       </form>
       <template #footer>
         <button
@@ -61,37 +52,35 @@ import { ref, reactive, onMounted, watch } from 'vue';
 import DataTable from '../common/DataTable.vue';
 import Modal from '../common/Modal.vue';
 import { useConfigurationStore } from '../../stores/configuration';
-import type { Color } from '../../types';
+import type { Colour } from '../../types';
 
 const configStore = useConfigurationStore();
 const showModal = ref(false);
 const showCreateModal = ref(false);
-const editingColor = ref<Color | null>(null);
+const editingColor = ref<Colour | null>(null);
 
 const formData = reactive({
   name: '',
-  hexCode: '',
 });
 
 const columns = [
   { key: 'name', label: 'Name' },
-  { key: 'hexCode', label: 'Hex Code' },
+  { key: 'slug', label: 'Slug' },
 ];
 
 onMounted(() => {
   configStore.fetchColors();
 });
 
-function handleEdit(color: Color) {
-  editingColor.value = color;
-  formData.name = color.name;
-  formData.hexCode = color.hexCode || '';
+function handleEdit(colour: Colour) {
+  editingColor.value = colour;
+  formData.name = colour.name;
   showModal.value = true;
 }
 
-function handleDelete(color: Color) {
-  if (confirm(`Are you sure you want to delete "${color.name}"?`)) {
-    configStore.deleteColor(color.id);
+function handleDelete(colour: Colour) {
+  if (confirm(`Are you sure you want to delete "${colour.name}"?`)) {
+    configStore.deleteColor(colour.id);
   }
 }
 
@@ -100,7 +89,6 @@ function closeModal() {
   showCreateModal.value = false;
   editingColor.value = null;
   formData.name = '';
-  formData.hexCode = '';
 }
 
 async function handleSubmit() {
@@ -121,7 +109,6 @@ watch(showCreateModal, (val) => {
     showModal.value = true;
     editingColor.value = null;
     formData.name = '';
-    formData.hexCode = '';
   }
 });
 </script>

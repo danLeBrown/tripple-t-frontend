@@ -18,28 +18,12 @@
     >
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-          <input
-            v-model="formData.name"
-            type="text"
-            required
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Value</label>
           <input
             v-model.number="formData.value"
             type="number"
+            required
             step="0.01"
-            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-          />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-          <input
-            v-model="formData.unit"
-            type="text"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           />
         </div>
@@ -77,15 +61,11 @@ const showCreateModal = ref(false);
 const editingSize = ref<Size | null>(null);
 
 const formData = reactive({
-  name: '',
-  value: undefined as number | undefined,
-  unit: '',
+  value: 0,
 });
 
 const columns = [
-  { key: 'name', label: 'Name' },
   { key: 'value', label: 'Value' },
-  { key: 'unit', label: 'Unit' },
 ];
 
 onMounted(() => {
@@ -94,14 +74,12 @@ onMounted(() => {
 
 function handleEdit(size: Size) {
   editingSize.value = size;
-  formData.name = size.name;
   formData.value = size.value;
-  formData.unit = size.unit || '';
   showModal.value = true;
 }
 
 function handleDelete(size: Size) {
-  if (confirm(`Are you sure you want to delete "${size.name}"?`)) {
+  if (confirm(`Are you sure you want to delete size with value "${size.value}"?`)) {
     configStore.deleteSize(size.id);
   }
 }
@@ -110,21 +88,15 @@ function closeModal() {
   showModal.value = false;
   showCreateModal.value = false;
   editingSize.value = null;
-  formData.name = '';
-  formData.value = undefined;
-  formData.unit = '';
+  formData.value = 0;
 }
 
 async function handleSubmit() {
   try {
-    const payload: any = { name: formData.name };
-    if (formData.value !== undefined) payload.value = formData.value;
-    if (formData.unit) payload.unit = formData.unit;
-
     if (editingSize.value) {
-      await configStore.updateSize(editingSize.value.id, payload);
+      await configStore.updateSize(editingSize.value.id, formData);
     } else {
-      await configStore.createSize(payload);
+      await configStore.createSize(formData);
     }
     closeModal();
   } catch (error) {
@@ -136,9 +108,7 @@ watch(showCreateModal, (val) => {
   if (val) {
     showModal.value = true;
     editingSize.value = null;
-    formData.name = '';
-    formData.value = undefined;
-    formData.unit = '';
+    formData.value = 0;
   }
 });
 </script>

@@ -16,12 +16,12 @@ class SizesService {
     return response.data;
   }
 
-  async create(size: Omit<Size, 'id'>): Promise<Size> {
+  async create(size: Omit<Size, 'id' | 'created_at' | 'updated_at'>): Promise<Size> {
     const response = await this.api.post('/sizes', size);
     return response.data;
   }
 
-  async update(id: string, size: Partial<Size>): Promise<Size> {
+  async update(id: string, size: Partial<Omit<Size, 'id' | 'created_at' | 'updated_at'>>): Promise<Size> {
     const response = await this.api.patch(`/sizes/${id}`, size);
     return response.data;
   }

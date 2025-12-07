@@ -75,6 +75,7 @@ const formData = reactive({
 const columns = [
   { key: 'name', label: 'Name' },
   { key: 'symbol', label: 'Symbol' },
+  { key: 'slug', label: 'Slug' },
 ];
 
 onMounted(() => {

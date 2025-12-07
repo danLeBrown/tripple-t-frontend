@@ -16,12 +16,12 @@ class UnitsService {
     return response.data;
   }
 
-  async create(unit: Omit<Unit, 'id'>): Promise<Unit> {
+  async create(unit: Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>): Promise<Unit> {
     const response = await this.api.post('/units', unit);
     return response.data;
   }
 
-  async update(id: string, unit: Partial<Unit>): Promise<Unit> {
+  async update(id: string, unit: Partial<Omit<Unit, 'id' | 'created_at' | 'updated_at' | 'slug'>>): Promise<Unit> {
     const response = await this.api.patch(`/units/${id}`, unit);
     return response.data;
   }
