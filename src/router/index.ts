@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import { useAuthStore } from '../stores/auth';
+import ChangePassword from '../views/ChangePassword.vue';
 import Configuration from '../views/Configuration.vue';
 import Dashboard from '../views/Dashboard.vue';
 import Login from '../views/Login.vue';
@@ -14,6 +15,12 @@ const router = createRouter({
       name: 'login',
       component: Login,
       meta: { requiresAuth: false },
+    },
+    {
+      path: '/change-password',
+      name: 'change-password',
+      component: ChangePassword,
+      meta: { requiresAuth: true, allowFirstLogin: true },
     },
     {
       path: '/',

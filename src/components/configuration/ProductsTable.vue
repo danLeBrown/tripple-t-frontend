@@ -32,6 +32,7 @@
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
           >
+            <option value="">Select a type</option>
             <option value="Bottle">Bottle</option>
             <option value="Cap">Cap</option>
             <option value="Preform">Preform</option>

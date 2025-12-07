@@ -46,7 +46,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(credentials: {
     email: string;
     password: string;
-  }): Promise<void> {
+  }): Promise<{ is_first_login: boolean }> {
     try {
       // Ensure we have CSRF token before login
       if (!csrfToken.value) {
@@ -63,6 +63,8 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('jwt_token', response.access_token);
       localStorage.setItem('refresh_token', response.refresh_token);
       localStorage.setItem('user', JSON.stringify(response.user));
+
+      return { is_first_login: response.is_first_login };
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -96,27 +98,30 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Logout
   async function logout() {
-    try {
-      // Call logout endpoint if we have a token
-      if (jwtToken.value) {
-        await baseApi.logout();
-      }
-    } catch (error) {
-      console.error('Logout endpoint failed:', error);
-      // Continue with local logout even if endpoint fails
-    } finally {
-      // Clear all auth state
-      jwtToken.value = null;
-      refreshToken.value = null;
-      csrfToken.value = null;
-      sessionId.value = null;
-      user.value = null;
-      isAuthenticated.value = false;
+    // Store token before clearing (needed for logout API call)
+    const tokenToLogout = jwtToken.value;
 
-      // Clear localStorage
-      localStorage.removeItem('jwt_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+    // Clear localStorage FIRST (synchronously) to prevent redirect loops
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+
+    // Clear all auth state
+    jwtToken.value = null;
+    refreshToken.value = null;
+    csrfToken.value = null;
+    sessionId.value = null;
+    user.value = null;
+    isAuthenticated.value = false;
+
+    // Then try to call logout endpoint (don't block on this)
+    if (tokenToLogout) {
+      try {
+        await baseApi.logout();
+      } catch (error) {
+        console.error('Logout endpoint failed:', error);
+        // Already cleared local state, so we're done
+      }
     }
   }
 
@@ -126,13 +131,19 @@ export const useAuthStore = defineStore('auth', () => {
     const storedRefreshToken = localStorage.getItem('refresh_token');
     const storedUser = localStorage.getItem('user');
 
-    if (storedToken) {
+    // Only set authenticated if we have both token and refresh token
+    // This prevents issues with expired tokens
+    if (storedToken && storedRefreshToken) {
       jwtToken.value = storedToken;
-      isAuthenticated.value = true;
-    }
-
-    if (storedRefreshToken) {
       refreshToken.value = storedRefreshToken;
+      isAuthenticated.value = true;
+    } else {
+      // If tokens are incomplete, clear everything
+      if (storedToken || storedRefreshToken) {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('user');
+      }
     }
 
     if (storedUser) {
@@ -155,6 +166,11 @@ export const useAuthStore = defineStore('auth', () => {
         await fetchCsrfToken();
       } catch (error) {
         console.error('Failed to fetch CSRF token on initialization:', error);
+        // If CSRF fetch fails, user might not be authenticated, clear state
+        if (!storedRefreshToken) {
+          isAuthenticated.value = false;
+          jwtToken.value = null;
+        }
       }
     }
   }
