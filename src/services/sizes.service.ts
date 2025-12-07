@@ -1,0 +1,35 @@
+import baseApi from './base.api';
+import type { Size } from '../types';
+
+class SizesService {
+  private get api() {
+    return baseApi.api;
+  }
+
+  async getAll(): Promise<Size[]> {
+    const response = await this.api.get('/sizes');
+    return response.data;
+  }
+
+  async getById(id: string): Promise<Size> {
+    const response = await this.api.get(`/sizes/${id}`);
+    return response.data;
+  }
+
+  async create(size: Omit<Size, 'id'>): Promise<Size> {
+    const response = await this.api.post('/sizes', size);
+    return response.data;
+  }
+
+  async update(id: string, size: Partial<Size>): Promise<Size> {
+    const response = await this.api.patch(`/sizes/${id}`, size);
+    return response.data;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.api.delete(`/sizes/${id}`);
+  }
+}
+
+export default new SizesService();
+

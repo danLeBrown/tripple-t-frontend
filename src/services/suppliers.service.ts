@@ -1,0 +1,35 @@
+import baseApi from './base.api';
+import type { Supplier } from '../types';
+
+class SuppliersService {
+  private get api() {
+    return baseApi.api;
+  }
+
+  async getAll(): Promise<Supplier[]> {
+    const response = await this.api.get('/suppliers');
+    return response.data;
+  }
+
+  async getById(id: string): Promise<Supplier> {
+    const response = await this.api.get(`/suppliers/${id}`);
+    return response.data;
+  }
+
+  async create(supplier: Omit<Supplier, 'id'>): Promise<Supplier> {
+    const response = await this.api.post('/suppliers', supplier);
+    return response.data;
+  }
+
+  async update(id: string, supplier: Partial<Supplier>): Promise<Supplier> {
+    const response = await this.api.patch(`/suppliers/${id}`, supplier);
+    return response.data;
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.api.delete(`/suppliers/${id}`);
+  }
+}
+
+export default new SuppliersService();
+
