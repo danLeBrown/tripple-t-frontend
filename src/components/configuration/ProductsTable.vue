@@ -165,7 +165,7 @@ const loadingOptions = ref(false);
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const formData = reactive({
-  type: 'preform' as ProductType,
+  type: 'Preform' as ProductType,
   size: 0,
   colour: '',
   unit: '',
@@ -280,7 +280,7 @@ function closeModal() {
   showModal.value = false;
   showCreateModal.value = false;
   editingProduct.value = null;
-  formData.type = 'preform';
+  formData.type = 'Preform' as ProductType;
   formData.size = 0;
   formData.colour = '';
   formData.unit = '';
@@ -318,7 +318,7 @@ watch(showCreateModal, async (val) => {
     }
     showModal.value = true;
     editingProduct.value = null;
-    formData.type = 'preform';
+    formData.type = 'Preform';
     formData.size = 0;
     formData.colour = '';
     formData.unit = '';
