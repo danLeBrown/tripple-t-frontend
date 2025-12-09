@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
 import { useAuthStore } from '../stores/auth';
+import Accounting from '../views/Accounting.vue';
 import ChangePassword from '../views/ChangePassword.vue';
 import Configuration from '../views/Configuration.vue';
 import Dashboard from '../views/Dashboard.vue';
@@ -49,6 +50,18 @@ const router = createRouter({
       path: '/third-parties/:tab',
       name: 'third-parties',
       component: ThirdParties,
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/accounting',
+      redirect: '/accounting/expenses',
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/accounting/:tab',
+      name: 'accounting',
+      component: Accounting,
       props: true,
       meta: { requiresAuth: true },
     },

@@ -1,4 +1,4 @@
-export type ProductType = 'preform' | 'cap' | 'bottle';
+export type ProductType = 'Preform' | 'Cap' | 'Bottle' | 'Nylon' | 'Other';
 
 // Base interface that all entities extend
 export interface BaseEntity {
@@ -117,4 +117,22 @@ export interface LoginResponse {
   access_token: string;
   refresh_token: string;
   is_first_login: boolean;
+}
+
+// Expense types
+export type ExpenseCategory =
+  | 'utility'
+  | 'office_supplies'
+  | 'salary'
+  | 'maintenance'
+  | 'miscellaneous'
+  | 'bonus'
+  | 'allowances';
+
+export interface Expense extends BaseEntity {
+  category: ExpenseCategory;
+  amount: number;
+  narration: string;
+  reported_at: number;
+  has_been_calculated?: boolean;
 }
