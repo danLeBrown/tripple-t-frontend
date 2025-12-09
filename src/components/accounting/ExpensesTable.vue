@@ -17,7 +17,14 @@
       @next-page="handleNextPage"
     >
       <template #cell-category="{ value }">
-        {{ formatCategoryLabel(value) }}
+        <span
+          :class="[
+            'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+            getCategoryBadgeClass(value),
+          ]"
+        >
+          {{ formatCategoryLabel(value) }}
+        </span>
       </template>
       <template #cell-amount="{ value }">
         ₦{{ value.toLocaleString() }}
@@ -194,15 +201,17 @@ const categoryLabels: Record<ExpenseCategory, string> = {
 };
 
 // Sort categories by their display labels
-const expenseCategories: ExpenseCategory[] = [
-  'utility',
-  'office_supplies',
-  'salary',
-  'maintenance',
-  'miscellaneous',
-  'bonus',
-  'allowances',
-].sort((a, b) => categoryLabels[a].localeCompare(categoryLabels[b]));
+const expenseCategories: ExpenseCategory[] = (
+  [
+    'utility',
+    'office_supplies',
+    'salary',
+    'maintenance',
+    'miscellaneous',
+    'bonus',
+    'allowances',
+  ] as ExpenseCategory[]
+).sort((a, b) => categoryLabels[a].localeCompare(categoryLabels[b]));
 
 const formData = reactive({
   category: '' as ExpenseCategory | '',
@@ -270,6 +279,19 @@ function handleNextPage() {
 
 function formatCategoryLabel(category: ExpenseCategory): string {
   return categoryLabels[category] || category;
+}
+
+function getCategoryBadgeClass(category: ExpenseCategory): string {
+  const badgeClasses: Record<ExpenseCategory, string> = {
+    utility: 'bg-blue-100 text-blue-800',
+    office_supplies: 'bg-purple-100 text-purple-800',
+    salary: 'bg-green-100 text-green-800',
+    maintenance: 'bg-orange-100 text-orange-800',
+    miscellaneous: 'bg-gray-100 text-gray-800',
+    bonus: 'bg-yellow-100 text-yellow-800',
+    allowances: 'bg-pink-100 text-pink-800',
+  };
+  return badgeClasses[category] ?? 'bg-gray-100 text-gray-800';
 }
 
 function formatDate(timestamp: number): string {
