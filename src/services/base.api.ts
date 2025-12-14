@@ -107,11 +107,35 @@ class BaseApiService {
       failedQueue = [];
     };
 
+    // Helper function to handle logout and redirect
+    const handleLogoutAndRedirect = async (currentPath: string) => {
+      const authStore = useAuthStore();
+
+      // Clear localStorage immediately (synchronously) before any redirects
+      localStorage.removeItem('jwt_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+
+      // Then call logout to clear store state
+      await authStore.logout();
+
+      // Redirect to login with the current path as redirect parameter
+      if (currentPath !== '/login') {
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+      } else {
+        window.location.href = '/login';
+      }
+    };
+
     this.api.interceptors.response.use(
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
         const alertStore = useAlertStore();
+
+        // Check if this is the refresh token endpoint itself
+        // If the refresh endpoint returns 401, the refresh token has expired
+        const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
 
         // Show error alert for non-401 errors
         if (error.response && error.response.status !== 401) {
@@ -124,6 +148,14 @@ class BaseApiService {
 
         // If error is 401 and we haven't tried to refresh yet
         if (error.response?.status === 401 && !originalRequest._retry) {
+          // If this is the refresh endpoint itself returning 401, refresh token has expired
+          // Don't try to refresh again - immediately logout and redirect
+          if (isRefreshEndpoint) {
+            const currentPath = window.location.pathname;
+            await handleLogoutAndRedirect(currentPath);
+            return Promise.reject(error);
+          }
+
           if (isRefreshing) {
             // If already refreshing, queue this request
             return new Promise((resolve, reject) => {
@@ -152,20 +184,8 @@ class BaseApiService {
               // Refresh failed - clear tokens immediately and redirect to login
               processQueue(refreshError, null);
 
-              // Clear localStorage immediately (synchronously) before any redirects
-              localStorage.removeItem('jwt_token');
-              localStorage.removeItem('refresh_token');
-              localStorage.removeItem('user');
-
-              // Then call logout to clear store state
-              await authStore.logout();
-
               const currentPath = window.location.pathname;
-              if (currentPath !== '/login') {
-                setTimeout(() => {
-                  window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
-                }, 0);
-              }
+              await handleLogoutAndRedirect(currentPath);
               return Promise.reject(refreshError);
             } finally {
               isRefreshing = false;
@@ -174,20 +194,8 @@ class BaseApiService {
             // No refresh token - clear tokens immediately and redirect to login
             isRefreshing = false;
 
-            // Clear localStorage immediately (synchronously) before any redirects
-            localStorage.removeItem('jwt_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user');
-
-            // Then call logout to clear store state
-            await authStore.logout();
-
             const currentPath = window.location.pathname;
-            if (currentPath !== '/login') {
-              setTimeout(() => {
-                window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
-              }, 0);
-            }
+            await handleLogoutAndRedirect(currentPath);
             return Promise.reject(error);
           }
         }
