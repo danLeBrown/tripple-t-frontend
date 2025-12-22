@@ -141,21 +141,25 @@
           type="text"
           placeholder="Enter a name for this file"
           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          :disabled="isUploading"
         />
       </div>
 
       <!-- Upload Progress -->
-      <div v-if="uploadProgress > 0 && uploadProgress < 100" class="space-y-2">
-        <div class="flex justify-between text-sm text-gray-600">
-          <span>Uploading...</span>
-          <span>{{ uploadProgress }}%</span>
+      <div v-if="isUploading" class="space-y-2">
+        <div class="flex justify-between items-center text-sm">
+          <span class="font-medium text-gray-700">Uploading file...</span>
+          <span class="font-semibold text-blue-600">{{ uploadProgress }}%</span>
         </div>
-        <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
           <div
-            class="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+            class="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
             :style="{ width: `${uploadProgress}%` }"
           ></div>
         </div>
+        <p class="text-xs text-gray-500">
+          {{ uploadStatusText }}
+        </p>
       </div>
 
       <!-- Upload Button -->
@@ -170,7 +174,7 @@
           Upload
         </button>
         <button
-          v-if="uploadedKey"
+          v-if="uploadedKey && !isUploading"
           type="button"
           disabled
           class="px-6 py-2 text-sm font-medium text-white bg-green-600 rounded-md cursor-not-allowed"
@@ -225,6 +229,18 @@ const isImageFile = computed(() => {
 
 const isPdfFile = computed(() => {
   return file.value?.type === 'application/pdf';
+});
+
+const uploadStatusText = computed(() => {
+  if (uploadProgress.value === 0) {
+    return 'Preparing upload...';
+  } else if (uploadProgress.value < 50) {
+    return 'Uploading to storage...';
+  } else if (uploadProgress.value < 100) {
+    return 'Finalizing upload...';
+  } else {
+    return 'Upload complete!';
+  }
 });
 
 // Watch for external changes to modelValue
@@ -423,20 +439,30 @@ async function handleUpload() {
     uploadProgress.value = 0;
 
     // Step 1: Get presigned URL
+    uploadProgress.value = 5;
     const { url, key } = await uploadsService.generatePresignedUrl(
       file.value.type,
     );
+    uploadProgress.value = 10;
 
     // Step 2: Upload file to S3 using presigned URL
+    // Progress will be updated by the XMLHttpRequest progress event
     await uploadToS3(url, file.value);
 
-    // Step 3: Update state
+    // Step 3: Create upload record in database
+    uploadProgress.value = 95;
+    await uploadsService.create(
+      fileName.value.trim(),
+      key,
+      file.value.type,
+      file.value.size,
+    );
+
+    // Step 4: Update state
     uploadedKey.value = key;
     uploadProgress.value = 100;
     emit('update:modelValue', key);
     emit('uploaded', { key, name: fileName.value });
-
-    alertStore.success('File uploaded successfully');
   } catch (error: any) {
     console.error('Upload error:', error);
     alertStore.error(
@@ -455,7 +481,9 @@ function uploadToS3(presignedUrl: string, file: File): Promise<void> {
 
     xhr.upload.addEventListener('progress', (e) => {
       if (e.lengthComputable) {
-        uploadProgress.value = Math.round((e.loaded / e.total) * 100);
+        // Map progress from 10% to 90% (since we start at 10% and end at 95%)
+        const progress = (e.loaded / e.total) * 80; // 80% of the range (10-90%)
+        uploadProgress.value = Math.round(10 + progress);
       }
     });
 

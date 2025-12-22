@@ -25,11 +25,9 @@
       <template #cell-file_size="{ value }">
         {{ formatFileSize(value) }}
       </template>
-      <template #cell-relative_url="{ value }">
-        <a
-          :href="getFileUrl(value)"
-          target="_blank"
-          rel="noopener noreferrer"
+      <template #cell-relative_url="{ row }">
+        <button
+          @click="viewUpload(row)"
           class="text-blue-600 hover:text-blue-800 underline flex items-center gap-1"
         >
           <svg
@@ -42,11 +40,17 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
             />
           </svg>
           View File
-        </a>
+        </button>
       </template>
       <template #cell-created_at="{ value }">
         {{ formatDate(value) }}
@@ -62,6 +66,13 @@
     >
       <Upload v-model="uploadedKey" @uploaded="handleUploaded" />
     </Modal>
+
+    <!-- View Upload Modal -->
+    <ViewUploadModal
+      :is-open="showViewModal"
+      :upload="viewingUpload"
+      @close="showViewModal = false"
+    />
 
     <!-- Delete Confirmation Modal -->
     <Modal
@@ -90,6 +101,7 @@ import type { Upload as UploadType } from '../../types';
 import DataTable from '../common/DataTable.vue';
 import Modal from '../common/Modal.vue';
 import Upload from '../common/Upload.vue';
+import ViewUploadModal from '../common/ViewUploadModal.vue';
 
 const alertStore = useAlertStore();
 
@@ -104,10 +116,12 @@ const pagination = ref<{
 const searchQuery = ref('');
 const isSubmitting = ref(false);
 const showCreateModal = ref(false);
+const showViewModal = ref(false);
 const showDeleteModal = ref(false);
 const deletingUpload = ref<UploadType | null>(null);
+const viewingUpload = ref<UploadType | null>(null);
 const editingUpload = ref<UploadType | null>(null);
-const uploadedKey = ref<string | null>(null);
+const uploadedKey = ref<string | undefined>(undefined);
 
 const columns = [
   { key: 'name', label: 'Name' },
@@ -168,6 +182,11 @@ function handleNextPage() {
   }
 }
 
+function viewUpload(upload: UploadType) {
+  viewingUpload.value = upload;
+  showViewModal.value = true;
+}
+
 function handleEdit(upload: UploadType) {
   editingUpload.value = upload;
   // For now, we'll just show a message that editing is not supported
@@ -181,18 +200,22 @@ function handleDelete(upload: UploadType) {
 }
 
 async function confirmDelete() {
-  if (!deletingUpload.value) {
+  if (!deletingUpload.value || isSubmitting.value) {
     return;
   }
 
   isSubmitting.value = true;
 
   try {
-    await uploadsService.delete(deletingUpload.value.id);
-    alertStore.success('Upload deleted successfully');
+    const response = await uploadsService.delete(deletingUpload.value.id);
     showDeleteModal.value = false;
     deletingUpload.value = null;
     await fetchUploads();
+    
+    // Only show success message if backend doesn't provide one
+    const successMessage =
+      (response as any)?.data?.message || 'Upload deleted successfully';
+    alertStore.success(successMessage);
   } catch (err: any) {
     alertStore.error(
       err.response?.data?.message ||
@@ -206,7 +229,7 @@ async function confirmDelete() {
 function handleUploaded(data: { key: string; name: string }) {
   alertStore.success(`File "${data.name}" uploaded successfully`);
   showCreateModal.value = false;
-  uploadedKey.value = null;
+  uploadedKey.value = undefined;
   fetchUploads();
 }
 
@@ -224,16 +247,6 @@ function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
-}
-
-function getFileUrl(relativeUrl: string): string {
-  // Construct the full URL to the file
-  // This assumes files are stored in S3 and accessible via a CDN or direct S3 URL
-  // You may need to adjust this based on your backend configuration
-  const baseUrl =
-    import.meta.env.VITE_FILE_BASE_URL ||
-    'https://staging-api.danlebrown.com/tripple-t';
-  return `${baseUrl}/files/${relativeUrl}`;
 }
 
 onMounted(() => {
