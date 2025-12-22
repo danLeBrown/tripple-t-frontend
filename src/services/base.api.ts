@@ -135,7 +135,8 @@ class BaseApiService {
 
         // Check if this is the refresh token endpoint itself
         // If the refresh endpoint returns 401, the refresh token has expired
-        const isRefreshEndpoint = originalRequest.url?.includes('/auth/refresh');
+        const isRefreshEndpoint =
+          originalRequest.url?.includes('/auth/refresh');
 
         // Show error alert for non-401 errors
         if (error.response && error.response.status !== 401) {

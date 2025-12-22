@@ -46,4 +46,3 @@ class ExpensesService {
 }
 
 export default new ExpensesService();
-

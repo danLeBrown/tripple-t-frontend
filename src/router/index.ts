@@ -7,6 +7,7 @@ import Configuration from '../views/Configuration.vue';
 import Dashboard from '../views/Dashboard.vue';
 import Login from '../views/Login.vue';
 import ThirdParties from '../views/ThirdParties.vue';
+import Uploads from '../views/Uploads.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -63,6 +64,12 @@ const router = createRouter({
       name: 'accounting',
       component: Accounting,
       props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/uploads',
+      name: 'uploads',
+      component: Uploads,
       meta: { requiresAuth: true },
     },
   ],
