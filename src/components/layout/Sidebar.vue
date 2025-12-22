@@ -156,6 +156,14 @@
               <BanknotesIcon class="w-5 h-5 mr-3" />
               Expenses
             </router-link>
+            <router-link
+              to="/accounting/purchase-records"
+              class="flex items-center px-6 py-3 pl-12 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              active-class="bg-gray-800 text-white"
+            >
+              <TruckIcon class="w-5 h-5 mr-3" />
+              Purchase Records
+            </router-link>
           </div>
         </Transition>
       </div>

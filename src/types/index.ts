@@ -149,3 +149,36 @@ export interface Upload extends BaseEntity {
   file_mimetype: string;
   file_size: number;
 }
+
+// Purchase Record types
+export interface PurchaseRecord extends BaseEntity {
+  upload_id: string | null;
+  product_id: string;
+  supplier_id: string;
+  supplier_name: string;
+  quantity_in_bags: number;
+  price_per_bag: number;
+  total_price: number;
+  purchased_at: number;
+  upload?: Upload;
+  supplier?: Supplier;
+  product?: Product;
+}
+
+export interface CreatePurchaseRecordDto {
+  product_id: string;
+  quantity_in_bags: number;
+  price_per_bag: number;
+  purchased_at: number;
+}
+
+export interface CreatePurchaseRecordsRequest {
+  upload?: {
+    name: string;
+    relative_url: string;
+    file_mimetype: string;
+    file_size: number;
+  };
+  upload_id?: string;
+  purchase_records: CreatePurchaseRecordDto[];
+}

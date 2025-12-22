@@ -192,6 +192,7 @@ import { computed, nextTick, onUnmounted, ref, watch } from 'vue';
 
 import uploadsService from '../../services/uploads.service';
 import { useAlertStore } from '../../stores/alert';
+import type { Upload } from '../../types';
 
 interface Props {
   modelValue?: string; // The uploaded file key
@@ -200,7 +201,7 @@ interface Props {
 
 interface Emits {
   (e: 'update:modelValue', value: string | null): void;
-  (e: 'uploaded', data: { key: string; name: string }): void;
+  (e: 'uploaded', data: { key: string; name: string; upload?: Upload }): void;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -451,7 +452,7 @@ async function handleUpload() {
 
     // Step 3: Create upload record in database
     uploadProgress.value = 95;
-    await uploadsService.create(
+    const upload = await uploadsService.create(
       fileName.value.trim(),
       key,
       file.value.type,
@@ -462,7 +463,7 @@ async function handleUpload() {
     uploadedKey.value = key;
     uploadProgress.value = 100;
     emit('update:modelValue', key);
-    emit('uploaded', { key, name: fileName.value });
+    emit('uploaded', { key, name: fileName.value, upload });
   } catch (error: any) {
     console.error('Upload error:', error);
     alertStore.error(

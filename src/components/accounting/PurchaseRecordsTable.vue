@@ -1,0 +1,767 @@
+<template>
+  <div>
+    <DataTable
+      title="Purchase Records"
+      :columns="columns"
+      :data="purchaseRecords"
+      :loading="loading || isSubmitting"
+      :error="error"
+      :pagination="pagination"
+      :search-query="searchQuery"
+      :get-row-id="(row) => row.id"
+      :show-actions="false"
+      @create="showCreateModal = true"
+      @update:search-query="handleSearch"
+      @prev-page="handlePrevPage"
+      @next-page="handleNextPage"
+    >
+      <template #cell-supplier_name="{ value }">
+        <span class="font-medium text-gray-900">{{ value }}</span>
+      </template>
+      <template #cell-product="{ row }">
+        <span class="text-sm text-gray-900">
+          {{
+            row.product?.name ||
+            (row.product
+              ? `${row.product.type} - ${row.product.size}${row.product.unit} (${row.product.colour})`
+              : 'N/A')
+          }}
+        </span>
+      </template>
+      <template #cell-quantity_in_bags="{ value }">
+        <span class="text-sm text-gray-600">{{ value }} bags</span>
+      </template>
+      <template #cell-price_per_bag="{ value }">
+        <span class="text-sm text-gray-600">₦{{ value.toLocaleString() }}</span>
+      </template>
+      <template #cell-total_price="{ value }">
+        <span class="font-medium text-gray-900"
+          >₦{{ value.toLocaleString() }}</span
+        >
+      </template>
+      <template #cell-purchased_at="{ value }">
+        {{ formatDate(value) }}
+      </template>
+      <template #cell-upload="{ row }">
+        <button
+          v-if="row.upload"
+          @click="viewUpload(row.upload)"
+          class="text-blue-600 hover:text-blue-800 underline flex items-center gap-1 text-sm"
+        >
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+            />
+          </svg>
+          View Invoice
+        </button>
+        <span v-else class="text-sm text-gray-400">No invoice</span>
+      </template>
+    </DataTable>
+
+    <!-- Create Purchase Records Modal -->
+    <Modal
+      :is-open="showCreateModal"
+      title="Create Purchase Records"
+      :show-footer="true"
+      :is-submitting="isSubmitting"
+      @close="closeModal"
+      @confirm="handleSubmit"
+    >
+      <form @submit.prevent="handleSubmit" class="space-y-6">
+        <!-- Supplier Selection -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Supplier *</label
+          >
+          <div class="relative">
+            <input
+              v-model="supplierSearchQuery"
+              @input="searchSuppliers"
+              @focus="showSupplierDropdown = true"
+              type="text"
+              placeholder="Search for a supplier..."
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            />
+            <div
+              v-if="showSupplierDropdown && suppliers.length > 0"
+              class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+            >
+              <button
+                v-for="supplier in suppliers"
+                :key="supplier.id"
+                type="button"
+                @click="selectSupplier(supplier)"
+                class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+              >
+                <div class="font-medium text-gray-900">
+                  {{ supplier.business_name }}
+                </div>
+                <div class="text-sm text-gray-500">
+                  {{ supplier.contact_person_first_name }}
+                  {{ supplier.contact_person_last_name }}
+                </div>
+              </button>
+            </div>
+          </div>
+          <div
+            v-if="selectedSupplier"
+            class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md"
+          >
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="font-medium text-gray-900">
+                  {{ selectedSupplier.business_name }}
+                </div>
+                <div class="text-sm text-gray-600">
+                  {{ selectedSupplier.contact_person_first_name }}
+                  {{ selectedSupplier.contact_person_last_name }}
+                </div>
+              </div>
+              <button
+                type="button"
+                @click="selectedSupplier = null"
+                class="text-red-600 hover:text-red-800"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload Selection (Optional) -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Invoice Document (Optional)</label
+          >
+          <div class="space-y-3">
+            <div class="flex gap-2">
+              <button
+                type="button"
+                @click="uploadMode = 'new'"
+                :class="[
+                  'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  uploadMode === 'new'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                ]"
+              >
+                Upload New
+              </button>
+              <button
+                type="button"
+                @click="uploadMode = 'existing'"
+                :class="[
+                  'flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors',
+                  uploadMode === 'existing'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                ]"
+              >
+                Use Existing
+              </button>
+            </div>
+
+            <!-- New Upload -->
+            <div v-if="uploadMode === 'new'">
+              <Upload
+                v-model="newUploadKey"
+                @uploaded="handleUploaded"
+              />
+            </div>
+
+            <!-- Existing Upload -->
+            <div v-else-if="uploadMode === 'existing'">
+              <div class="relative">
+                <input
+                  v-model="uploadSearchQuery"
+                  @input="searchUploads"
+                  @focus="showUploadDropdown = true"
+                  type="text"
+                  placeholder="Search for an upload..."
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+                <div
+                  v-if="showUploadDropdown && availableUploads.length > 0"
+                  class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+                >
+                  <button
+                    v-for="upload in availableUploads"
+                    :key="upload.id"
+                    type="button"
+                    @click="selectUpload(upload)"
+                    class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  >
+                    <div class="font-medium text-gray-900">{{ upload.name }}</div>
+                    <div class="text-sm text-gray-500">
+                      {{ formatFileSize(upload.file_size) }}
+                    </div>
+                  </button>
+                </div>
+              </div>
+              <div
+                v-if="selectedUpload"
+                class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="font-medium text-gray-900">
+                      {{ selectedUpload.name }}
+                    </div>
+                    <div class="text-sm text-gray-600">
+                      {{ formatFileSize(selectedUpload.file_size) }}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    @click="selectedUpload = null"
+                    class="text-red-600 hover:text-red-800"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Purchase Records -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-sm font-medium text-gray-700"
+              >Purchase Records *</label
+            >
+            <button
+              type="button"
+              @click="addPurchaseRecord"
+              class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              + Add Record
+            </button>
+          </div>
+
+          <div class="space-y-4">
+            <div
+              v-for="(record, index) in purchaseRecordsForm"
+              :key="index"
+              class="p-4 border border-gray-300 rounded-lg space-y-3"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-gray-700"
+                  >Record {{ index + 1 }}</span
+                >
+                <button
+                  type="button"
+                  @click="removePurchaseRecord(index)"
+                  class="text-red-600 hover:text-red-800 text-sm"
+                >
+                  Remove
+                </button>
+              </div>
+
+              <!-- Product Selection -->
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1"
+                  >Product *</label
+                >
+                <div class="relative">
+                  <input
+                    v-model="record.productSearch"
+                    @input="searchProducts(record, index)"
+                    @focus="record.showProductDropdown = true"
+                    type="text"
+                    placeholder="Search for a product..."
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                  <div
+                    v-if="record.showProductDropdown && record.products.length > 0"
+                    class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
+                  >
+                    <button
+                      v-for="product in record.products"
+                      :key="product.id"
+                      type="button"
+                      @click="selectProduct(record, product)"
+                      class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
+                    >
+                      {{ `${product.type} - ${product.size}${product.unit} (${product.colour})` }}
+                    </button>
+                  </div>
+                </div>
+                <div
+                  v-if="record.product"
+                  class="mt-1 text-xs text-gray-600"
+                >
+                  Selected:
+                  {{ `${record.product.type} - ${record.product.size}${record.product.unit} (${record.product.colour})` }}
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-3">
+                <!-- Quantity -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1"
+                    >Quantity (bags) *</label
+                  >
+                  <input
+                    v-model.number="record.quantity_in_bags"
+                    type="number"
+                    min="1"
+                    step="1"
+                    required
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                </div>
+
+                <!-- Price per bag -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1"
+                    >Price per bag (₦) *</label
+                  >
+                  <input
+                    v-model.number="record.price_per_bag"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                </div>
+
+                <!-- Purchase Date -->
+                <div>
+                  <label class="block text-xs font-medium text-gray-600 mb-1"
+                    >Purchase Date *</label
+                  >
+                  <input
+                    v-model="record.purchased_at"
+                    type="date"
+                    required
+                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  />
+                </div>
+              </div>
+
+              <!-- Total -->
+              <div
+                v-if="record.quantity_in_bags && record.price_per_bag"
+                class="text-sm text-gray-600"
+              >
+                Total: ₦{{
+                  (
+                    record.quantity_in_bags * record.price_per_bag
+                  ).toLocaleString()
+                }}
+              </div>
+            </div>
+
+            <div
+              v-if="purchaseRecordsForm.length === 0"
+              class="text-center py-8 text-gray-500 text-sm"
+            >
+              No purchase records added. Click "Add Record" to get started.
+            </div>
+          </div>
+        </div>
+      </form>
+    </Modal>
+
+    <!-- View Upload Modal -->
+    <ViewUploadModal
+      :is-open="showViewModal"
+      :upload="viewingUpload"
+      @close="showViewModal = false"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { format } from 'date-fns';
+import { onMounted, ref } from 'vue';
+
+import purchaseRecordsService from '../../services/purchase-records.service';
+import productsService from '../../services/products.service';
+import suppliersService from '../../services/suppliers.service';
+import uploadsService from '../../services/uploads.service';
+import { useAlertStore } from '../../stores/alert';
+import type {
+  Product,
+  PurchaseRecord,
+  Supplier,
+  Upload as UploadType,
+} from '../../types';
+import DataTable from '../common/DataTable.vue';
+import Modal from '../common/Modal.vue';
+import Upload from '../common/Upload.vue';
+import ViewUploadModal from '../common/ViewUploadModal.vue';
+
+const alertStore = useAlertStore();
+
+const purchaseRecords = ref<PurchaseRecord[]>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
+const pagination = ref<{
+  total: number;
+  limit: number;
+  page: number;
+} | null>(null);
+const searchQuery = ref('');
+const isSubmitting = ref(false);
+const showCreateModal = ref(false);
+const showViewModal = ref(false);
+const viewingUpload = ref<UploadType | null>(null);
+
+// Form state
+const selectedSupplier = ref<Supplier | null>(null);
+const supplierSearchQuery = ref('');
+const suppliers = ref<Supplier[]>([]);
+const showSupplierDropdown = ref(false);
+
+const uploadMode = ref<'new' | 'existing' | null>(null);
+const newUploadKey = ref<string | undefined>(undefined);
+const newUploadDetails = ref<UploadType | null>(null);
+const uploadSearchQuery = ref('');
+const availableUploads = ref<UploadType[]>([]);
+const selectedUpload = ref<UploadType | null>(null);
+const showUploadDropdown = ref(false);
+
+interface PurchaseRecordFormItem {
+  product_id: string;
+  product: Product | null;
+  productSearch: string;
+  products: Product[];
+  showProductDropdown: boolean;
+  quantity_in_bags: number;
+  price_per_bag: number;
+  purchased_at: string;
+}
+
+const purchaseRecordsForm = ref<PurchaseRecordFormItem[]>([]);
+
+const columns = [
+  { key: 'supplier_name', label: 'Supplier' },
+  { key: 'product', label: 'Product' },
+  { key: 'quantity_in_bags', label: 'Quantity' },
+  { key: 'price_per_bag', label: 'Price per Bag' },
+  { key: 'total_price', label: 'Total Price' },
+  { key: 'purchased_at', label: 'Purchase Date' },
+  { key: 'upload', label: 'Invoice' },
+];
+
+async function fetchPurchaseRecords() {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    const response = await purchaseRecordsService.search({
+      query: searchQuery.value || undefined,
+      page: pagination.value?.page || 0,
+      limit: pagination.value?.limit || 10,
+    });
+
+    purchaseRecords.value = response.data;
+    pagination.value = {
+      total: response.total,
+      limit: response.limit,
+      page: response.page,
+    };
+  } catch (err: any) {
+    error.value =
+      err.response?.data?.message ||
+      'Failed to fetch purchase records. Please try again.';
+    console.error('Error fetching purchase records:', err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+function handleSearch(query: string) {
+  searchQuery.value = query;
+  if (pagination.value) {
+    pagination.value.page = 0;
+  }
+  fetchPurchaseRecords();
+}
+
+function handlePrevPage() {
+  if (pagination.value && pagination.value.page > 0) {
+    pagination.value.page--;
+    fetchPurchaseRecords();
+  }
+}
+
+function handleNextPage() {
+  if (
+    pagination.value &&
+    (pagination.value.page + 1) * pagination.value.limit <
+      pagination.value.total
+  ) {
+    pagination.value.page++;
+    fetchPurchaseRecords();
+  }
+}
+
+// Supplier search
+let supplierSearchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+async function searchSuppliers() {
+  if (supplierSearchTimeout) {
+    clearTimeout(supplierSearchTimeout);
+  }
+
+  supplierSearchTimeout = setTimeout(async () => {
+    if (!supplierSearchQuery.value.trim()) {
+      suppliers.value = [];
+      return;
+    }
+
+    try {
+      const response = await suppliersService.search({
+        query: supplierSearchQuery.value,
+        limit: 10,
+      });
+      suppliers.value = response.data;
+    } catch (err) {
+      console.error('Error searching suppliers:', err);
+      suppliers.value = [];
+    }
+  }, 300);
+}
+
+function selectSupplier(supplier: Supplier) {
+  selectedSupplier.value = supplier;
+  supplierSearchQuery.value = '';
+  suppliers.value = [];
+  showSupplierDropdown.value = false;
+}
+
+// Upload search
+let uploadSearchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+async function searchUploads() {
+  if (uploadSearchTimeout) {
+    clearTimeout(uploadSearchTimeout);
+  }
+
+  uploadSearchTimeout = setTimeout(async () => {
+    if (!uploadSearchQuery.value.trim()) {
+      availableUploads.value = [];
+      return;
+    }
+
+    try {
+      const response = await uploadsService.search({
+        query: uploadSearchQuery.value,
+        limit: 10,
+      });
+      availableUploads.value = response.data;
+    } catch (err) {
+      console.error('Error searching uploads:', err);
+      availableUploads.value = [];
+    }
+  }, 300);
+}
+
+function selectUpload(upload: UploadType) {
+  selectedUpload.value = upload;
+  uploadSearchQuery.value = '';
+  availableUploads.value = [];
+  showUploadDropdown.value = false;
+}
+
+function handleUploaded(data: {
+  key: string;
+  name: string;
+  upload?: UploadType;
+}) {
+  newUploadKey.value = data.key;
+  if (data.upload) {
+    newUploadDetails.value = data.upload;
+  }
+}
+
+// Product search for each record
+let productSearchTimeouts: Map<number, ReturnType<typeof setTimeout>> =
+  new Map();
+
+async function searchProducts(record: PurchaseRecordFormItem, index: number) {
+  const existingTimeout = productSearchTimeouts.get(index);
+  if (existingTimeout) {
+    clearTimeout(existingTimeout);
+  }
+
+  const timeout = setTimeout(async () => {
+    if (!record.productSearch.trim()) {
+      record.products = [];
+      return;
+    }
+
+    try {
+      const response = await productsService.search({
+        query: record.productSearch,
+        limit: 10,
+      });
+      record.products = response.data;
+    } catch (err) {
+      console.error('Error searching products:', err);
+      record.products = [];
+    }
+  }, 300);
+
+  productSearchTimeouts.set(index, timeout);
+}
+
+function selectProduct(record: PurchaseRecordFormItem, product: Product) {
+  record.product = product;
+  record.product_id = product.id;
+  record.productSearch = '';
+  record.products = [];
+  record.showProductDropdown = false;
+}
+
+function addPurchaseRecord() {
+  purchaseRecordsForm.value.push({
+    product_id: '',
+    product: null,
+    productSearch: '',
+    products: [],
+    showProductDropdown: false,
+    quantity_in_bags: 0,
+    price_per_bag: 0,
+    purchased_at: '',
+  });
+}
+
+function removePurchaseRecord(index: number) {
+  purchaseRecordsForm.value.splice(index, 1);
+}
+
+async function handleSubmit() {
+  if (!selectedSupplier.value) {
+    alertStore.error('Please select a supplier');
+    return;
+  }
+
+  if (purchaseRecordsForm.value.length === 0) {
+    alertStore.error('Please add at least one purchase record');
+    return;
+  }
+
+  // Validate all records
+  for (const record of purchaseRecordsForm.value) {
+    if (!record.product_id) {
+      alertStore.error('Please select a product for all records');
+      return;
+    }
+    if (!record.quantity_in_bags || record.quantity_in_bags <= 0) {
+      alertStore.error('Please enter a valid quantity for all records');
+      return;
+    }
+    if (!record.price_per_bag || record.price_per_bag <= 0) {
+      alertStore.error('Please enter a valid price per bag for all records');
+      return;
+    }
+    if (!record.purchased_at) {
+      alertStore.error('Please select a purchase date for all records');
+      return;
+    }
+  }
+
+  isSubmitting.value = true;
+
+  try {
+    const requestBody: any = {
+      purchase_records: purchaseRecordsForm.value.map((record) => ({
+        product_id: record.product_id,
+        quantity_in_bags: record.quantity_in_bags,
+        price_per_bag: record.price_per_bag,
+        purchased_at: Math.floor(
+          new Date(record.purchased_at).getTime() / 1000,
+        ),
+      })),
+    };
+
+    // Handle upload
+    if (uploadMode.value === 'new' && newUploadDetails.value) {
+      requestBody.upload = {
+        name: newUploadDetails.value.name,
+        relative_url: newUploadDetails.value.relative_url,
+        file_mimetype: newUploadDetails.value.file_mimetype,
+        file_size: newUploadDetails.value.file_size,
+      };
+    } else if (uploadMode.value === 'existing' && selectedUpload.value) {
+      requestBody.upload_id = selectedUpload.value.id;
+    }
+
+    await purchaseRecordsService.create(
+      selectedSupplier.value.id,
+      requestBody,
+    );
+
+    alertStore.success('Purchase records created successfully');
+    closeModal();
+    await fetchPurchaseRecords();
+  } catch (err: any) {
+    alertStore.error(
+      err.response?.data?.message ||
+        'Failed to create purchase records. Please try again.',
+    );
+  } finally {
+    isSubmitting.value = false;
+  }
+}
+
+function closeModal() {
+  showCreateModal.value = false;
+  selectedSupplier.value = null;
+  supplierSearchQuery.value = '';
+  suppliers.value = [];
+  uploadMode.value = null;
+  newUploadKey.value = undefined;
+  newUploadDetails.value = null;
+  selectedUpload.value = null;
+  uploadSearchQuery.value = '';
+  availableUploads.value = [];
+  purchaseRecordsForm.value = [];
+}
+
+function viewUpload(upload: UploadType) {
+  viewingUpload.value = upload;
+  showViewModal.value = true;
+}
+
+function formatDate(timestamp: number): string {
+  return format(new Date(timestamp * 1000), 'MMM dd, yyyy');
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) {
+    return '0 Bytes';
+  }
+
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+}
+
+onMounted(() => {
+  fetchPurchaseRecords();
+});
+</script>
+
