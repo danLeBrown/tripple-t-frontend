@@ -19,14 +19,20 @@
         <span class="font-medium text-gray-900">{{ value }}</span>
       </template>
       <template #cell-product="{ row }">
-        <span class="text-sm text-gray-900">
-          {{
-            row.product?.name ||
-            (row.product
-              ? `${row.product.type} - ${row.product.size}${row.product.unit} (${row.product.colour})`
-              : 'N/A')
-          }}
-        </span>
+        <div v-if="row.product" class="flex items-center gap-2">
+          <component
+            :is="getProductTypeIcon(row.product.type)"
+            class="w-5 h-5 shrink-0"
+            :class="getProductTypeIconClass(row.product.type)"
+          />
+          <span class="text-sm text-gray-900">
+            {{
+              row.product.name ||
+              `${row.product.type} - ${row.product.size}${row.product.unit} (${row.product.colour})`
+            }}
+          </span>
+        </div>
+        <span v-else class="text-sm text-gray-400">N/A</span>
       </template>
       <template #cell-quantity_in_bags="{ value }">
         <span class="text-sm text-gray-600">{{ value }} bags</span>
@@ -296,18 +302,38 @@
                       :key="product.id"
                       type="button"
                       @click="selectProduct(record, product)"
-                      class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm"
+                      class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none text-sm flex items-center gap-2"
                     >
-                      {{ `${product.type} - ${product.size}${product.unit} (${product.colour})` }}
+                      <component
+                        :is="getProductTypeIcon(product.type)"
+                        class="w-4 h-4 shrink-0"
+                        :class="getProductTypeIconClass(product.type)"
+                      />
+                      <span>
+                        {{
+                          product.name ||
+                          `${product.type} - ${product.size}${product.unit} (${product.colour})`
+                        }}
+                      </span>
                     </button>
                   </div>
                 </div>
                 <div
                   v-if="record.product"
-                  class="mt-1 text-xs text-gray-600"
+                  class="mt-1 text-xs text-gray-600 flex items-center gap-2"
                 >
-                  Selected:
-                  {{ `${record.product.type} - ${record.product.size}${record.product.unit} (${record.product.colour})` }}
+                  <component
+                    :is="getProductTypeIcon(record.product.type)"
+                    class="w-4 h-4 shrink-0"
+                    :class="getProductTypeIconClass(record.product.type)"
+                  />
+                  <span>
+                    Selected:
+                    {{
+                      record.product.name ||
+                      `${record.product.type} - ${record.product.size}${record.product.unit} (${record.product.colour})`
+                    }}
+                  </span>
                 </div>
               </div>
 
@@ -404,6 +430,10 @@ import type {
   Supplier,
   Upload as UploadType,
 } from '../../types';
+import {
+  getProductTypeIcon,
+  getProductTypeIconClass,
+} from '../../utils/product-types';
 import DataTable from '../common/DataTable.vue';
 import Modal from '../common/Modal.vue';
 import Upload from '../common/Upload.vue';

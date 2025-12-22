@@ -17,7 +17,7 @@ class ProductsService {
   }
 
   async create(
-    product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+    product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug' | 'name'>,
   ): Promise<Product> {
     const response = await this.api.post('/products', product);
     return response.data;
@@ -26,7 +26,7 @@ class ProductsService {
   async update(
     id: string,
     product: Partial<
-      Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>
+      Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug' | 'name'>
     >,
   ): Promise<Product> {
     const response = await this.api.patch(`/products/${id}`, product);

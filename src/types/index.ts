@@ -13,6 +13,7 @@ export interface Product extends BaseEntity {
   colour: string;
   unit: string;
   slug: string;
+  name: string;
 }
 
 export interface Colour extends BaseEntity {
