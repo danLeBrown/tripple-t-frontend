@@ -12,7 +12,10 @@
           <div
             class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
           >
-            <h2 class="text-xl font-semibold text-gray-900">{{ title }}</h2>
+            <div class="flex items-center gap-3">
+              <slot name="title-icon"></slot>
+              <h2 class="text-xl font-semibold text-gray-900">{{ title }}</h2>
+            </div>
             <button
               @click="close"
               class="text-gray-400 hover:text-gray-600 transition-colors"

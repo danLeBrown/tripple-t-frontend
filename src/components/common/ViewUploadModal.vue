@@ -5,6 +5,14 @@
     :show-footer="false"
     @close="$emit('close')"
   >
+    <template #title-icon>
+      <component
+        v-if="upload?.file_mimetype"
+        :is="fileTypeIcon"
+        class="w-6 h-6 flex-shrink-0"
+        :class="fileTypeIconClass"
+      />
+    </template>
     <div v-if="loading" class="flex items-center justify-center p-8">
       <div class="text-center">
         <div
@@ -141,6 +149,88 @@ const isImage = computed(() => {
 
 const isPdf = computed(() => {
   return props.upload?.file_mimetype === 'application/pdf';
+});
+
+function getFileTypeIcon(mimetype: string) {
+  if (mimetype.startsWith('image/')) {
+    return PhotoIcon;
+  } else if (mimetype === 'application/pdf') {
+    return DocumentTextIcon;
+  } else if (
+    mimetype.startsWith('video/') ||
+    mimetype === 'application/vnd.apple.mpegurl'
+  ) {
+    return FilmIcon;
+  } else if (mimetype.startsWith('audio/')) {
+    return MusicalNoteIcon;
+  } else if (
+    mimetype.includes('zip') ||
+    mimetype.includes('rar') ||
+    mimetype.includes('tar') ||
+    mimetype.includes('archive')
+  ) {
+    return ArchiveBoxIcon;
+  } else if (
+    mimetype.includes('javascript') ||
+    mimetype.includes('json') ||
+    mimetype.includes('xml') ||
+    mimetype.includes('html') ||
+    mimetype.includes('css')
+  ) {
+    return CodeBracketIcon;
+  } else if (
+    mimetype.includes('word') ||
+    mimetype.includes('excel') ||
+    mimetype.includes('powerpoint') ||
+    mimetype.includes('office') ||
+    mimetype.includes('officedocument')
+  ) {
+    return DocumentIcon;
+  } else {
+    return RectangleStackIcon;
+  }
+}
+
+function getFileTypeIconClass(mimetype: string): string {
+  if (mimetype.startsWith('image/')) {
+    return 'text-blue-500';
+  } else if (mimetype === 'application/pdf') {
+    return 'text-red-500';
+  } else if (mimetype.startsWith('video/')) {
+    return 'text-purple-500';
+  } else if (mimetype.startsWith('audio/')) {
+    return 'text-green-500';
+  } else if (
+    mimetype.includes('zip') ||
+    mimetype.includes('rar') ||
+    mimetype.includes('tar')
+  ) {
+    return 'text-yellow-600';
+  } else if (
+    mimetype.includes('javascript') ||
+    mimetype.includes('json') ||
+    mimetype.includes('xml')
+  ) {
+    return 'text-orange-500';
+  } else if (
+    mimetype.includes('word') ||
+    mimetype.includes('excel') ||
+    mimetype.includes('powerpoint')
+  ) {
+    return 'text-blue-600';
+  } else {
+    return 'text-gray-500';
+  }
+}
+
+const fileTypeIcon = computed(() => {
+  if (!props.upload?.file_mimetype) return null;
+  return getFileTypeIcon(props.upload.file_mimetype);
+});
+
+const fileTypeIconClass = computed(() => {
+  if (!props.upload?.file_mimetype) return '';
+  return getFileTypeIconClass(props.upload.file_mimetype);
 });
 
 async function loadFile() {
