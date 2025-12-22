@@ -136,3 +136,16 @@ export interface Expense extends BaseEntity {
   reported_at: number;
   has_been_calculated?: boolean;
 }
+
+// Upload types
+export interface PresignedUrlResponse {
+  url: string;
+  key: string;
+}
+
+export interface Upload extends BaseEntity {
+  name: string;
+  relative_url: string;
+  file_mimetype: string;
+  file_size: number;
+}

@@ -30,13 +30,8 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="relative">
         <input
-          :value="searchQuery"
-          @input="
-            $emit(
-              'update:searchQuery',
-              ($event.target as HTMLInputElement).value,
-            )
-          "
+          :value="localSearchQuery"
+          @input="handleSearchInput"
           type="text"
           placeholder="Search..."
           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -84,6 +79,7 @@
               {{ column.label }}
             </th>
             <th
+              v-if="props.showActions"
               class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Actions
@@ -106,6 +102,7 @@
               </slot>
             </td>
             <td
+              v-if="props.showActions"
               class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
             >
               <button
@@ -126,7 +123,7 @@
           </tr>
           <tr v-if="data.length === 0">
             <td
-              :colspan="columns.length + 1"
+              :colspan="columns.length + (props.showActions ? 1 : 0)"
               class="px-6 py-8 text-center text-gray-500"
             >
               No data available
@@ -187,28 +184,38 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue';
+
 interface Column {
   key: string;
   label: string;
   format?: (value: any) => string;
 }
 
-defineProps<{
-  title: string;
-  columns: Column[];
-  data: any[];
-  loading?: boolean;
-  error?: string | null;
-  getRowId: (row: any) => string | number;
-  pagination?: {
-    total: number;
-    limit: number;
-    page: number;
-  } | null;
-  searchQuery?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    columns: Column[];
+    data: any[];
+    loading?: boolean;
+    error?: string | null;
+    getRowId: (row: any) => string | number;
+    pagination?: {
+      total: number;
+      limit: number;
+      page: number;
+    } | null;
+    searchQuery?: string;
+    showActions?: boolean;
+    searchDebounceMs?: number;
+  }>(),
+  {
+    showActions: true,
+    searchDebounceMs: 300,
+  },
+);
 
-defineEmits<{
+const emit = defineEmits<{
   create: [];
   edit: [row: any];
   delete: [row: any];
@@ -216,6 +223,35 @@ defineEmits<{
   prevPage: [];
   nextPage: [];
 }>();
+
+// Local search query for immediate UI updates
+const localSearchQuery = ref(props.searchQuery || '');
+
+// Watch for external changes to searchQuery
+watch(
+  () => props.searchQuery,
+  (newValue) => {
+    localSearchQuery.value = newValue || '';
+  },
+);
+
+// Debounce timer
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function handleSearchInput(event: Event) {
+  const value = (event.target as HTMLInputElement).value;
+  localSearchQuery.value = value;
+
+  // Clear existing timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  // Set new timeout to emit debounced search query
+  searchTimeout = setTimeout(() => {
+    emit('update:searchQuery', value);
+  }, props.searchDebounceMs);
+}
 
 function formatValue(value: any, column: Column): string {
   if (value === null || value === undefined) return '-';
