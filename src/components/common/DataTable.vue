@@ -30,13 +30,8 @@
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="relative">
         <input
-          :value="searchQuery"
-          @input="
-            $emit(
-              'update:searchQuery',
-              ($event.target as HTMLInputElement).value,
-            )
-          "
+          :value="localSearchQuery"
+          @input="handleSearchInput"
           type="text"
           placeholder="Search..."
           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
@@ -189,6 +184,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch, withDefaults } from 'vue';
+
 interface Column {
   key: string;
   label: string;
@@ -210,13 +207,15 @@ const props = withDefaults(
     } | null;
     searchQuery?: string;
     showActions?: boolean;
+    searchDebounceMs?: number;
   }>(),
   {
     showActions: true,
+    searchDebounceMs: 300,
   },
 );
 
-defineEmits<{
+const emit = defineEmits<{
   create: [];
   edit: [row: any];
   delete: [row: any];
@@ -224,6 +223,35 @@ defineEmits<{
   prevPage: [];
   nextPage: [];
 }>();
+
+// Local search query for immediate UI updates
+const localSearchQuery = ref(props.searchQuery || '');
+
+// Watch for external changes to searchQuery
+watch(
+  () => props.searchQuery,
+  (newValue) => {
+    localSearchQuery.value = newValue || '';
+  },
+);
+
+// Debounce timer
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function handleSearchInput(event: Event) {
+  const value = (event.target as HTMLInputElement).value;
+  localSearchQuery.value = value;
+
+  // Clear existing timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+
+  // Set new timeout to emit debounced search query
+  searchTimeout = setTimeout(() => {
+    emit('update:searchQuery', value);
+  }, props.searchDebounceMs);
+}
 
 function formatValue(value: any, column: Column): string {
   if (value === null || value === undefined) return '-';

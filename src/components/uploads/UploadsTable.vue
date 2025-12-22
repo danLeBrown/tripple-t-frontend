@@ -156,7 +156,9 @@ async function fetchUploads() {
 
 function handleSearch(query: string) {
   searchQuery.value = query;
-  pagination.value = { ...pagination.value!, page: 0 };
+  if (pagination.value) {
+    pagination.value.page = 0;
+  }
   fetchUploads();
 }
 
