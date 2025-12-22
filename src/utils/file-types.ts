@@ -1,11 +1,11 @@
 import {
+  ArchiveBoxIcon,
+  CodeBracketIcon,
   DocumentIcon,
-  PhotoIcon,
   DocumentTextIcon,
   FilmIcon,
   MusicalNoteIcon,
-  ArchiveBoxIcon,
-  CodeBracketIcon,
+  PhotoIcon,
   RectangleStackIcon,
 } from '@heroicons/vue/24/outline';
 import type { Component } from 'vue';
@@ -45,9 +45,8 @@ export function getFileTypeIcon(mimetype: string): Component {
     mimetype.includes('officedocument')
   ) {
     return DocumentIcon;
-  } else {
-    return RectangleStackIcon;
   }
+  return RectangleStackIcon;
 }
 
 export function getFileTypeIconClass(mimetype: string): string {
@@ -77,9 +76,8 @@ export function getFileTypeIconClass(mimetype: string): string {
     mimetype.includes('powerpoint')
   ) {
     return 'text-blue-600';
-  } else {
-    return 'text-gray-500';
   }
+  return 'text-gray-500';
 }
 
 export function getFileTypeLabel(mimetype: string): string {
@@ -112,16 +110,17 @@ export function getFileTypeLabel(mimetype: string): string {
     return 'Word Document';
   } else if (mimetype.includes('excel') || mimetype.includes('spreadsheet')) {
     return 'Excel Spreadsheet';
-  } else if (mimetype.includes('powerpoint') || mimetype.includes('presentation')) {
+  } else if (
+    mimetype.includes('powerpoint') ||
+    mimetype.includes('presentation')
+  ) {
     return 'PowerPoint';
-  } else {
-    // Extract the main type and subtype
-    const parts = mimetype.split('/');
-    if (parts.length === 2) {
-      const [mainType, subType] = parts;
-      return `${mainType.charAt(0).toUpperCase() + mainType.slice(1)} (${subType.toUpperCase()})`;
-    }
-    return mimetype;
   }
+  // Extract the main type and subtype
+  const parts = mimetype.split('/');
+  if (parts.length === 2) {
+    const [mainType, subType] = parts;
+    return `${(mainType?.charAt(0).toUpperCase() || '') + (mainType?.slice(1) || '')} (${subType?.toUpperCase() || ''})`;
+  }
+  return mimetype;
 }
-

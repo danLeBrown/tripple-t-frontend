@@ -124,7 +124,7 @@ import { computed, onUnmounted, ref, watch } from 'vue';
 import uploadsService from '../../services/uploads.service';
 import { useAlertStore } from '../../stores/alert';
 import type { Upload } from '../../types';
-import { getFileTypeIcon, getFileTypeIconClass } from '../../utils/fileTypes';
+import { getFileTypeIcon, getFileTypeIconClass } from '../../utils/file-types';
 import Modal from './Modal.vue';
 
 interface Props {

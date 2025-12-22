@@ -32,7 +32,9 @@
             class="w-5 h-5 flex-shrink-0"
             :class="getFileTypeIconClass(value)"
           />
-          <span class="text-sm text-gray-600">{{ getFileTypeLabel(value) }}</span>
+          <span class="text-sm text-gray-600">{{
+            getFileTypeLabel(value)
+          }}</span>
         </div>
       </template>
       <template #cell-file_size="{ value }">
@@ -86,7 +88,6 @@
       :upload="viewingUpload"
       @close="showViewModal = false"
     />
-
   </div>
 </template>
 
@@ -97,7 +98,11 @@ import { onMounted, ref } from 'vue';
 import uploadsService from '../../services/uploads.service';
 import { useAlertStore } from '../../stores/alert';
 import type { Upload as UploadType } from '../../types';
-import { getFileTypeIcon, getFileTypeIconClass, getFileTypeLabel } from '../../utils/fileTypes';
+import {
+  getFileTypeIcon,
+  getFileTypeIconClass,
+  getFileTypeLabel,
+} from '../../utils/file-types';
 import DataTable from '../common/DataTable.vue';
 import Modal from '../common/Modal.vue';
 import Upload from '../common/Upload.vue';
@@ -185,7 +190,6 @@ function viewUpload(upload: UploadType) {
   showViewModal.value = true;
 }
 
-
 function handleUploaded(data: { key: string; name: string }) {
   alertStore.success(`File "${data.name}" uploaded successfully`);
   showCreateModal.value = false;
@@ -208,7 +212,6 @@ function formatFileSize(bytes: number): string {
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
-
 
 onMounted(() => {
   fetchUploads();
