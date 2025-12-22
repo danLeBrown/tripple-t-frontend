@@ -79,6 +79,7 @@
       :is-open="showDeleteModal"
       title="Delete Upload"
       :show-footer="true"
+      :is-submitting="isSubmitting"
       @close="showDeleteModal = false"
       @confirm="confirmDelete"
     >
