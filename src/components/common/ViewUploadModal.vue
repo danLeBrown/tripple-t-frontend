@@ -7,7 +7,7 @@
   >
     <template #title-icon>
       <component
-        v-if="upload?.file_mimetype"
+        v-if="fileTypeIcon"
         :is="fileTypeIcon"
         class="w-6 h-6 flex-shrink-0"
         :class="fileTypeIconClass"
@@ -124,6 +124,7 @@ import { computed, onUnmounted, ref, watch } from 'vue';
 import uploadsService from '../../services/uploads.service';
 import { useAlertStore } from '../../stores/alert';
 import type { Upload } from '../../types';
+import { getFileTypeIcon, getFileTypeIconClass } from '../../utils/fileTypes';
 import Modal from './Modal.vue';
 
 interface Props {
@@ -150,78 +151,6 @@ const isImage = computed(() => {
 const isPdf = computed(() => {
   return props.upload?.file_mimetype === 'application/pdf';
 });
-
-function getFileTypeIcon(mimetype: string) {
-  if (mimetype.startsWith('image/')) {
-    return PhotoIcon;
-  } else if (mimetype === 'application/pdf') {
-    return DocumentTextIcon;
-  } else if (
-    mimetype.startsWith('video/') ||
-    mimetype === 'application/vnd.apple.mpegurl'
-  ) {
-    return FilmIcon;
-  } else if (mimetype.startsWith('audio/')) {
-    return MusicalNoteIcon;
-  } else if (
-    mimetype.includes('zip') ||
-    mimetype.includes('rar') ||
-    mimetype.includes('tar') ||
-    mimetype.includes('archive')
-  ) {
-    return ArchiveBoxIcon;
-  } else if (
-    mimetype.includes('javascript') ||
-    mimetype.includes('json') ||
-    mimetype.includes('xml') ||
-    mimetype.includes('html') ||
-    mimetype.includes('css')
-  ) {
-    return CodeBracketIcon;
-  } else if (
-    mimetype.includes('word') ||
-    mimetype.includes('excel') ||
-    mimetype.includes('powerpoint') ||
-    mimetype.includes('office') ||
-    mimetype.includes('officedocument')
-  ) {
-    return DocumentIcon;
-  } else {
-    return RectangleStackIcon;
-  }
-}
-
-function getFileTypeIconClass(mimetype: string): string {
-  if (mimetype.startsWith('image/')) {
-    return 'text-blue-500';
-  } else if (mimetype === 'application/pdf') {
-    return 'text-red-500';
-  } else if (mimetype.startsWith('video/')) {
-    return 'text-purple-500';
-  } else if (mimetype.startsWith('audio/')) {
-    return 'text-green-500';
-  } else if (
-    mimetype.includes('zip') ||
-    mimetype.includes('rar') ||
-    mimetype.includes('tar')
-  ) {
-    return 'text-yellow-600';
-  } else if (
-    mimetype.includes('javascript') ||
-    mimetype.includes('json') ||
-    mimetype.includes('xml')
-  ) {
-    return 'text-orange-500';
-  } else if (
-    mimetype.includes('word') ||
-    mimetype.includes('excel') ||
-    mimetype.includes('powerpoint')
-  ) {
-    return 'text-blue-600';
-  } else {
-    return 'text-gray-500';
-  }
-}
 
 const fileTypeIcon = computed(() => {
   if (!props.upload?.file_mimetype) return null;

@@ -84,6 +84,7 @@
               {{ column.label }}
             </th>
             <th
+              v-if="props.showActions"
               class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
             >
               Actions
@@ -106,6 +107,7 @@
               </slot>
             </td>
             <td
+              v-if="props.showActions"
               class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
             >
               <button
@@ -126,7 +128,7 @@
           </tr>
           <tr v-if="data.length === 0">
             <td
-              :colspan="columns.length + 1"
+              :colspan="columns.length + (props.showActions ? 1 : 0)"
               class="px-6 py-8 text-center text-gray-500"
             >
               No data available
@@ -193,20 +195,26 @@ interface Column {
   format?: (value: any) => string;
 }
 
-defineProps<{
-  title: string;
-  columns: Column[];
-  data: any[];
-  loading?: boolean;
-  error?: string | null;
-  getRowId: (row: any) => string | number;
-  pagination?: {
-    total: number;
-    limit: number;
-    page: number;
-  } | null;
-  searchQuery?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    columns: Column[];
+    data: any[];
+    loading?: boolean;
+    error?: string | null;
+    getRowId: (row: any) => string | number;
+    pagination?: {
+      total: number;
+      limit: number;
+      page: number;
+    } | null;
+    searchQuery?: string;
+    showActions?: boolean;
+  }>(),
+  {
+    showActions: true,
+  },
+);
 
 defineEmits<{
   create: [];
