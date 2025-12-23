@@ -168,6 +168,44 @@
         </Transition>
       </div>
 
+      <div class="mt-4">
+        <button
+          @click="isProductionOpen = !isProductionOpen"
+          class="w-full flex items-center justify-between px-6 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:bg-gray-800 transition-colors"
+        >
+          <div class="flex items-center">
+            <Cog6ToothIcon class="w-4 h-4 mr-2" />
+            Production
+          </div>
+          <ChevronDownIcon
+            :class="[
+              'w-4 h-4 transition-transform duration-200',
+              isProductionOpen ? 'transform rotate-180' : '',
+            ]"
+          />
+        </button>
+
+        <Transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0 max-h-0"
+          enter-to-class="opacity-100 max-h-96"
+          leave-active-class="transition-all duration-200 ease-in"
+          leave-from-class="opacity-100 max-h-96"
+          leave-to-class="opacity-0 max-h-0"
+        >
+          <div v-show="isProductionOpen" class="overflow-hidden">
+            <router-link
+              to="/production/bottle"
+              class="flex items-center px-6 py-3 pl-12 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+              active-class="bg-gray-800 text-white"
+            >
+              <BeakerIcon class="w-5 h-5 mr-3" />
+              Bottle
+            </router-link>
+          </div>
+        </Transition>
+      </div>
+
       <router-link
         to="/uploads"
         class="mt-4 flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
@@ -184,6 +222,7 @@
 import {
   ArrowsPointingOutIcon,
   BanknotesIcon,
+  BeakerIcon,
   BuildingOfficeIcon,
   CalculatorIcon,
   ChevronDownIcon,
@@ -203,6 +242,7 @@ const route = useRoute();
 const isConfigurationOpen = ref(false);
 const isThirdPartiesOpen = ref(false);
 const isAccountingOpen = ref(false);
+const isProductionOpen = ref(false);
 
 // Auto-expand sections based on current route
 watch(
@@ -216,6 +256,9 @@ watch(
     }
     if (path.startsWith('/accounting')) {
       isAccountingOpen.value = true;
+    }
+    if (path.startsWith('/production')) {
+      isProductionOpen.value = true;
     }
   },
   { immediate: true },
