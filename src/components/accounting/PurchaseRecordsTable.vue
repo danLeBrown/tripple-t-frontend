@@ -98,6 +98,14 @@
               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
             />
             <div
+              v-if="searchingSuppliers"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2"
+            >
+              <div
+                class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"
+              ></div>
+            </div>
+            <div
               v-if="showSupplierDropdown && suppliers.length > 0"
               class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
             >
@@ -663,14 +671,31 @@ function selectUpload(upload: UploadType) {
   showUploadDropdown.value = false;
 }
 
-function handleUploaded(data: {
+async function handleUploaded(data: {
   key: string;
   name: string;
   upload?: UploadType;
 }) {
   newUploadKey.value = data.key;
-  if (data.upload) {
+  if (data.upload?.id) {
     newUploadId.value = data.upload.id;
+    console.log('Upload ID set from upload object:', newUploadId.value);
+  } else {
+    // Fallback: fetch the upload by key if not provided
+    try {
+      const response = await uploadsService.search({
+        limit: 100,
+      });
+      const upload = response.data.find((u) => u.relative_url === data.key);
+      if (upload) {
+        newUploadId.value = upload.id;
+        console.log('Upload ID set from search:', newUploadId.value);
+      } else {
+        console.warn('Upload not found for key:', data.key);
+      }
+    } catch (err) {
+      console.error('Error fetching upload details:', err);
+    }
   }
 }
 
@@ -799,8 +824,15 @@ async function handleSubmit() {
     // Handle upload - only send upload_id, not the upload object
     if (uploadMode.value === 'new' && newUploadId.value) {
       requestBody.upload_id = newUploadId.value;
+      console.log('Sending upload_id (new):', newUploadId.value);
     } else if (uploadMode.value === 'existing' && selectedUpload.value) {
       requestBody.upload_id = selectedUpload.value.id;
+      console.log('Sending upload_id (existing):', selectedUpload.value.id);
+    } else if (uploadMode.value === 'new') {
+      console.warn(
+        'New upload mode selected but no upload_id available. Key:',
+        newUploadKey.value,
+      );
     }
 
     await purchaseRecordsService.create(selectedSupplier.value.id, requestBody);
