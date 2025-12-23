@@ -1,10 +1,10 @@
 <template>
-  <aside class="w-64 bg-gray-900 text-white min-h-screen">
-    <div class="p-6">
+  <aside class="fixed left-0 top-0 w-64 bg-gray-900 text-white h-screen flex flex-col z-10">
+    <div class="p-6 flex-shrink-0">
       <h1 class="text-2xl font-bold">Tripple T</h1>
       <p class="text-gray-400 text-sm mt-1">Dashboard</p>
     </div>
-    <nav class="mt-8">
+    <nav class="flex-1 overflow-y-auto mt-8">
       <router-link
         to="/"
         class="flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
@@ -200,9 +200,9 @@ import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const isConfigurationOpen = ref(true);
-const isThirdPartiesOpen = ref(true);
-const isAccountingOpen = ref(true);
+const isConfigurationOpen = ref(false);
+const isThirdPartiesOpen = ref(false);
+const isAccountingOpen = ref(false);
 
 // Auto-expand sections based on current route
 watch(

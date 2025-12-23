@@ -1,7 +1,7 @@
 <template>
   <div class="flex min-h-screen bg-gray-100 overflow-x-hidden">
     <Sidebar />
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 ml-64">
       <Header
         :title="title"
         :search-query="searchQuery"
