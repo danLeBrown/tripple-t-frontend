@@ -193,6 +193,14 @@
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 />
                 <div
+                  v-if="searchingUploads"
+                  class="absolute right-3 top-1/2 transform -translate-y-1/2"
+                >
+                  <div
+                    class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"
+                  ></div>
+                </div>
+                <div
                   v-if="showUploadDropdown && availableUploads.length > 0"
                   class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
                 >
@@ -290,6 +298,14 @@
                     placeholder="Search for a product..."
                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
+                  <div
+                    v-if="record.searchingProducts"
+                    class="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  >
+                    <div
+                      class="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"
+                    ></div>
+                  </div>
                   <div
                     v-if="
                       record.showProductDropdown && record.products.length > 0
@@ -394,6 +410,33 @@
             >
               No purchase records added. Click "Add Record" to get started.
             </div>
+
+            <!-- Add Record Button (at bottom of last record) -->
+            <div class="pt-2">
+              <button
+                type="button"
+                @click="addPurchaseRecord"
+                ref="addRecordButtonRef"
+                class="w-full px-4 py-2 text-sm text-blue-600 hover:text-blue-800 font-medium border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+              >
+                + Add Record
+              </button>
+            </div>
+          </div>
+
+          <!-- Total Amount Display -->
+          <div
+            v-if="purchaseRecordsForm.length > 0"
+            class="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-700"
+                >Total Amount:</span
+              >
+              <span class="text-lg font-bold text-gray-900">
+                ₦{{ formatCurrency(totalAmount) }}
+              </span>
+            </div>
           </div>
         </div>
       </form>
@@ -410,7 +453,7 @@
 
 <script setup lang="ts">
 import { format, fromUnixTime, getUnixTime } from 'date-fns';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import productsService from '../../services/products.service';
 import purchaseRecordsService from '../../services/purchase-records.service';
@@ -454,15 +497,18 @@ const selectedSupplier = ref<Supplier | null>(null);
 const supplierSearchQuery = ref('');
 const suppliers = ref<Supplier[]>([]);
 const showSupplierDropdown = ref(false);
+const searchingSuppliers = ref(false);
 
 const uploadMode = ref<'new' | 'existing' | null>(null);
 const newUploadKey = ref<string | undefined>(undefined);
-const newUploadDetails = ref<UploadType | null>(null);
+const newUploadId = ref<string | undefined>(undefined);
 const uploadSearchQuery = ref('');
 const availableUploads = ref<UploadType[]>([]);
 const selectedUpload = ref<UploadType | null>(null);
 const showUploadDropdown = ref(false);
+const searchingUploads = ref(false);
 const purchasedAt = ref<string>('');
+const addRecordButtonRef = ref<HTMLButtonElement | null>(null);
 
 interface PurchaseRecordFormItem {
   product_id: string;
@@ -470,6 +516,7 @@ interface PurchaseRecordFormItem {
   productSearch: string;
   products: Product[];
   showProductDropdown: boolean;
+  searchingProducts: boolean;
   quantity_in_bags: number;
   price_per_bag: number;
   price_per_bag_display: string;
@@ -551,9 +598,11 @@ async function searchSuppliers() {
   supplierSearchTimeout = setTimeout(async () => {
     if (!supplierSearchQuery.value.trim()) {
       suppliers.value = [];
+      searchingSuppliers.value = false;
       return;
     }
 
+    searchingSuppliers.value = true;
     try {
       const response = await suppliersService.search({
         query: supplierSearchQuery.value,
@@ -563,6 +612,8 @@ async function searchSuppliers() {
     } catch (err) {
       console.error('Error searching suppliers:', err);
       suppliers.value = [];
+    } finally {
+      searchingSuppliers.value = false;
     }
   }, 300);
 }
@@ -585,9 +636,11 @@ async function searchUploads() {
   uploadSearchTimeout = setTimeout(async () => {
     if (!uploadSearchQuery.value.trim()) {
       availableUploads.value = [];
+      searchingUploads.value = false;
       return;
     }
 
+    searchingUploads.value = true;
     try {
       const response = await uploadsService.search({
         query: uploadSearchQuery.value,
@@ -597,6 +650,8 @@ async function searchUploads() {
     } catch (err) {
       console.error('Error searching uploads:', err);
       availableUploads.value = [];
+    } finally {
+      searchingUploads.value = false;
     }
   }, 300);
 }
@@ -615,7 +670,7 @@ function handleUploaded(data: {
 }) {
   newUploadKey.value = data.key;
   if (data.upload) {
-    newUploadDetails.value = data.upload;
+    newUploadId.value = data.upload.id;
   }
 }
 
@@ -634,18 +689,29 @@ async function searchProducts(record: PurchaseRecordFormItem, index: number) {
   const timeout = setTimeout(async () => {
     if (!record.productSearch.trim()) {
       record.products = [];
+      record.searchingProducts = false;
       return;
     }
 
+    record.searchingProducts = true;
     try {
       const response = await productsService.search({
         query: record.productSearch,
-        limit: 10,
+        limit: 100, // Get more to filter out selected ones
       });
-      record.products = response.data;
+      // Get all selected product IDs from other records
+      const selectedProductIds = purchaseRecordsForm.value
+        .filter((r, i) => i !== index && r.product_id)
+        .map((r) => r.product_id);
+      // Filter out already selected products
+      record.products = response.data.filter(
+        (p) => !selectedProductIds.includes(p.id),
+      );
     } catch (err) {
       console.error('Error searching products:', err);
       record.products = [];
+    } finally {
+      record.searchingProducts = false;
     }
   }, 300);
 
@@ -667,10 +733,19 @@ function addPurchaseRecord() {
     productSearch: '',
     products: [],
     showProductDropdown: false,
+    searchingProducts: false,
     quantity_in_bags: 0,
     price_per_bag: 0,
     price_per_bag_display: '',
   });
+
+  // Auto-scroll to the add record button after adding a new record
+  setTimeout(() => {
+    addRecordButtonRef.value?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    });
+  }, 100);
 }
 
 function removePurchaseRecord(index: number) {
@@ -721,14 +796,9 @@ async function handleSubmit() {
       })),
     };
 
-    // Handle upload
-    if (uploadMode.value === 'new' && newUploadDetails.value) {
-      requestBody.upload = {
-        name: newUploadDetails.value.name,
-        relative_url: newUploadDetails.value.relative_url,
-        file_mimetype: newUploadDetails.value.file_mimetype,
-        file_size: newUploadDetails.value.file_size,
-      };
+    // Handle upload - only send upload_id, not the upload object
+    if (uploadMode.value === 'new' && newUploadId.value) {
+      requestBody.upload_id = newUploadId.value;
     } else if (uploadMode.value === 'existing' && selectedUpload.value) {
       requestBody.upload_id = selectedUpload.value.id;
     }
@@ -755,7 +825,7 @@ function closeModal() {
   suppliers.value = [];
   uploadMode.value = null;
   newUploadKey.value = undefined;
-  newUploadDetails.value = null;
+  newUploadId.value = undefined;
   selectedUpload.value = null;
   uploadSearchQuery.value = '';
   availableUploads.value = [];
@@ -808,6 +878,12 @@ function formatFileSize(bytes: number): string {
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 }
+
+const totalAmount = computed(() => {
+  return purchaseRecordsForm.value.reduce((sum, record) => {
+    return sum + record.quantity_in_bags * record.price_per_bag;
+  }, 0);
+});
 
 onMounted(() => {
   fetchPurchaseRecords();
