@@ -679,7 +679,6 @@ async function handleUploaded(data: {
   newUploadKey.value = data.key;
   if (data.upload?.id) {
     newUploadId.value = data.upload.id;
-    console.log('Upload ID set from upload object:', newUploadId.value);
   } else {
     // Fallback: fetch the upload by key if not provided
     try {
@@ -689,9 +688,6 @@ async function handleUploaded(data: {
       const upload = response.data.find((u) => u.relative_url === data.key);
       if (upload) {
         newUploadId.value = upload.id;
-        console.log('Upload ID set from search:', newUploadId.value);
-      } else {
-        console.warn('Upload not found for key:', data.key);
       }
     } catch (err) {
       console.error('Error fetching upload details:', err);
@@ -824,15 +820,8 @@ async function handleSubmit() {
     // Handle upload - only send upload_id, not the upload object
     if (uploadMode.value === 'new' && newUploadId.value) {
       requestBody.upload_id = newUploadId.value;
-      console.log('Sending upload_id (new):', newUploadId.value);
     } else if (uploadMode.value === 'existing' && selectedUpload.value) {
       requestBody.upload_id = selectedUpload.value.id;
-      console.log('Sending upload_id (existing):', selectedUpload.value.id);
-    } else if (uploadMode.value === 'new') {
-      console.warn(
-        'New upload mode selected but no upload_id available. Key:',
-        newUploadKey.value,
-      );
     }
 
     await purchaseRecordsService.create(selectedSupplier.value.id, requestBody);
