@@ -6,6 +6,7 @@ import ChangePassword from '../views/ChangePassword.vue';
 import Configuration from '../views/Configuration.vue';
 import Dashboard from '../views/Dashboard.vue';
 import Login from '../views/Login.vue';
+import Production from '../views/Production.vue';
 import ThirdParties from '../views/ThirdParties.vue';
 import Uploads from '../views/Uploads.vue';
 
@@ -63,6 +64,18 @@ const router = createRouter({
       path: '/accounting/:tab',
       name: 'accounting',
       component: Accounting,
+      props: true,
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/production',
+      redirect: '/production/bottle',
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/production/:tab',
+      name: 'production',
+      component: Production,
       props: true,
       meta: { requiresAuth: true },
     },

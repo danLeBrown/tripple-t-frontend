@@ -10,7 +10,7 @@
           class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         >
           <div
-            class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+            class="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shadow-sm"
           >
             <div class="flex items-center gap-3">
               <slot name="title-icon"></slot>
@@ -40,7 +40,7 @@
           </div>
           <div
             v-if="showFooter"
-            class="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3"
+            class="sticky bottom-0 z-10 bg-white border-t border-gray-200 px-6 py-4 flex justify-end gap-3 shadow-sm"
           >
             <slot name="footer">
               <button

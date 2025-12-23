@@ -183,3 +183,52 @@ export interface CreatePurchaseRecordsRequest {
   purchased_at: number;
   purchase_records: CreatePurchaseRecordDto[];
 }
+
+// Bottle Production types
+export interface BottleProduction extends BaseEntity {
+  preform_supplier_id: string;
+  supplier_name: string;
+  preform_product_id: string;
+  preform_name: string;
+  bottle_product_id: string;
+  bottle_name: string;
+  preform_size: number;
+  preform_color: string;
+  preforms_used: number;
+  preforms_defective: number;
+  preforms_successful: number;
+  bottle_size: number;
+  bottle_color: string;
+  bottles_produced: number;
+  bottles_defective: number;
+  bottles_successful: number;
+  produced_at: number;
+  notes: string | null;
+  supplier?: Supplier;
+  preform_product?: Product;
+  bottle_product?: Product;
+}
+
+export interface CreateBottleProductionRequest {
+  preform_supplier_id: string;
+  preform_product_id: string;
+  bottle_product_id: string;
+  preform_size: number;
+  preforms_used: number;
+  preforms_defective: number;
+  bottle_size: number;
+  bottle_color: string;
+  bottles_produced: number;
+  bottles_defective: number;
+  produced_at: number;
+  notes?: string;
+}
+
+export interface UpdateBottleProductionRequest {
+  preforms_used?: number;
+  preforms_defective?: number;
+  bottle_color?: string;
+  bottles_produced?: number;
+  bottles_defective?: number;
+  notes?: string;
+}
