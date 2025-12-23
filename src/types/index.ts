@@ -155,6 +155,8 @@ export interface Upload extends BaseEntity {
 export interface PurchaseRecord extends BaseEntity {
   upload_id: string | null;
   product_id: string;
+  product_name: string;
+  product_type: ProductType;
   supplier_id: string;
   supplier_name: string;
   quantity_in_bags: number;
@@ -162,15 +164,12 @@ export interface PurchaseRecord extends BaseEntity {
   total_price: number;
   purchased_at: number;
   upload?: Upload;
-  supplier?: Supplier;
-  product?: Product;
 }
 
 export interface CreatePurchaseRecordDto {
   product_id: string;
   quantity_in_bags: number;
   price_per_bag: number;
-  purchased_at: number;
 }
 
 export interface CreatePurchaseRecordsRequest {
@@ -181,5 +180,6 @@ export interface CreatePurchaseRecordsRequest {
     file_size: number;
   };
   upload_id?: string;
+  purchased_at: number;
   purchase_records: CreatePurchaseRecordDto[];
 }

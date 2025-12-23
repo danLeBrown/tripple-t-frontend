@@ -184,10 +184,7 @@
 
             <!-- New Upload -->
             <div v-if="uploadMode === 'new'">
-              <Upload
-                v-model="newUploadKey"
-                @uploaded="handleUploaded"
-              />
+              <Upload v-model="newUploadKey" @uploaded="handleUploaded" />
             </div>
 
             <!-- Existing Upload -->
@@ -212,7 +209,9 @@
                     @click="selectUpload(upload)"
                     class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
                   >
-                    <div class="font-medium text-gray-900">{{ upload.name }}</div>
+                    <div class="font-medium text-gray-900">
+                      {{ upload.name }}
+                    </div>
                     <div class="text-sm text-gray-500">
                       {{ formatFileSize(upload.file_size) }}
                     </div>
@@ -243,6 +242,19 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Purchase Date -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2"
+            >Purchase Date *</label
+          >
+          <input
+            v-model="purchasedAt"
+            type="date"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          />
         </div>
 
         <!-- Purchase Records -->
@@ -294,7 +306,9 @@
                     class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                   />
                   <div
-                    v-if="record.showProductDropdown && record.products.length > 0"
+                    v-if="
+                      record.showProductDropdown && record.products.length > 0
+                    "
                     class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto"
                   >
                     <button
@@ -337,7 +351,7 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-3 gap-3">
+              <div class="grid grid-cols-2 gap-3">
                 <!-- Quantity -->
                 <div>
                   <label class="block text-xs font-medium text-gray-600 mb-1"
@@ -358,27 +372,21 @@
                   <label class="block text-xs font-medium text-gray-600 mb-1"
                     >Price per bag (₦) *</label
                   >
-                  <input
-                    v-model.number="record.price_per_bag"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    required
-                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
-                </div>
-
-                <!-- Purchase Date -->
-                <div>
-                  <label class="block text-xs font-medium text-gray-600 mb-1"
-                    >Purchase Date *</label
-                  >
-                  <input
-                    v-model="record.purchased_at"
-                    type="date"
-                    required
-                    class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  />
+                  <div class="relative">
+                    <div
+                      class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+                    >
+                      <span class="text-gray-500 text-xs">₦</span>
+                    </div>
+                    <input
+                      v-model="record.price_per_bag_display"
+                      @input="handlePriceInput(record, $event)"
+                      type="text"
+                      required
+                      class="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -416,15 +424,16 @@
 </template>
 
 <script setup lang="ts">
-import { format } from 'date-fns';
+import { format, fromUnixTime, getUnixTime } from 'date-fns';
 import { onMounted, ref } from 'vue';
 
-import purchaseRecordsService from '../../services/purchase-records.service';
 import productsService from '../../services/products.service';
+import purchaseRecordsService from '../../services/purchase-records.service';
 import suppliersService from '../../services/suppliers.service';
 import uploadsService from '../../services/uploads.service';
 import { useAlertStore } from '../../stores/alert';
 import type {
+  CreatePurchaseRecordsRequest,
   Product,
   PurchaseRecord,
   Supplier,
@@ -468,6 +477,7 @@ const uploadSearchQuery = ref('');
 const availableUploads = ref<UploadType[]>([]);
 const selectedUpload = ref<UploadType | null>(null);
 const showUploadDropdown = ref(false);
+const purchasedAt = ref<string>('');
 
 interface PurchaseRecordFormItem {
   product_id: string;
@@ -477,7 +487,7 @@ interface PurchaseRecordFormItem {
   showProductDropdown: boolean;
   quantity_in_bags: number;
   price_per_bag: number;
-  purchased_at: string;
+  price_per_bag_display: string;
 }
 
 const purchaseRecordsForm = ref<PurchaseRecordFormItem[]>([]);
@@ -625,8 +635,10 @@ function handleUploaded(data: {
 }
 
 // Product search for each record
-let productSearchTimeouts: Map<number, ReturnType<typeof setTimeout>> =
-  new Map();
+let productSearchTimeouts: Map<
+  number,
+  ReturnType<typeof setTimeout>
+> = new Map();
 
 async function searchProducts(record: PurchaseRecordFormItem, index: number) {
   const existingTimeout = productSearchTimeouts.get(index);
@@ -672,7 +684,7 @@ function addPurchaseRecord() {
     showProductDropdown: false,
     quantity_in_bags: 0,
     price_per_bag: 0,
-    purchased_at: '',
+    price_per_bag_display: '',
   });
 }
 
@@ -705,23 +717,22 @@ async function handleSubmit() {
       alertStore.error('Please enter a valid price per bag for all records');
       return;
     }
-    if (!record.purchased_at) {
-      alertStore.error('Please select a purchase date for all records');
-      return;
-    }
+  }
+
+  if (!purchasedAt.value) {
+    alertStore.error('Please select a purchase date');
+    return;
   }
 
   isSubmitting.value = true;
 
   try {
-    const requestBody: any = {
+    const requestBody: CreatePurchaseRecordsRequest = {
+      purchased_at: getUnixTime(new Date(purchasedAt.value)),
       purchase_records: purchaseRecordsForm.value.map((record) => ({
         product_id: record.product_id,
         quantity_in_bags: record.quantity_in_bags,
         price_per_bag: record.price_per_bag,
-        purchased_at: Math.floor(
-          new Date(record.purchased_at).getTime() / 1000,
-        ),
       })),
     };
 
@@ -737,10 +748,7 @@ async function handleSubmit() {
       requestBody.upload_id = selectedUpload.value.id;
     }
 
-    await purchaseRecordsService.create(
-      selectedSupplier.value.id,
-      requestBody,
-    );
+    await purchaseRecordsService.create(selectedSupplier.value.id, requestBody);
 
     alertStore.success('Purchase records created successfully');
     closeModal();
@@ -767,6 +775,7 @@ function closeModal() {
   uploadSearchQuery.value = '';
   availableUploads.value = [];
   purchaseRecordsForm.value = [];
+  purchasedAt.value = '';
 }
 
 function viewUpload(upload: UploadType) {
@@ -775,7 +784,32 @@ function viewUpload(upload: UploadType) {
 }
 
 function formatDate(timestamp: number): string {
-  return format(new Date(timestamp * 1000), 'MMM dd, yyyy');
+  const date = fromUnixTime(timestamp);
+  return format(date, 'MMM dd, yyyy');
+}
+
+function formatCurrency(value: number): string {
+  if (!value && value !== 0) return '';
+  // Format as number with commas, no decimals for whole numbers
+  return value.toLocaleString('en-NG', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
+function parseCurrency(value: string): number {
+  // Remove all non-digit characters
+  const digits = value.replace(/\D/g, '');
+  return digits ? parseInt(digits, 10) : 0;
+}
+
+function handlePriceInput(record: PurchaseRecordFormItem, event: Event) {
+  const input = event.target as HTMLInputElement;
+  const value = input.value;
+  const numericValue = parseCurrency(value);
+  record.price_per_bag = numericValue;
+  // Update display with formatted value
+  record.price_per_bag_display = formatCurrency(numericValue);
 }
 
 function formatFileSize(bytes: number): string {
@@ -794,4 +828,3 @@ onMounted(() => {
   fetchPurchaseRecords();
 });
 </script>
-
