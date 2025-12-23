@@ -19,20 +19,14 @@
         <span class="font-medium text-gray-900">{{ value }}</span>
       </template>
       <template #cell-product="{ row }">
-        <div v-if="row.product" class="flex items-center gap-2">
+        <div class="flex items-center gap-2">
           <component
-            :is="getProductTypeIcon(row.product.type)"
+            :is="getProductTypeIcon(row.product_type)"
             class="w-5 h-5 shrink-0"
-            :class="getProductTypeIconClass(row.product.type)"
+            :class="getProductTypeIconClass(row.product_type)"
           />
-          <span class="text-sm text-gray-900">
-            {{
-              row.product.name ||
-              `${row.product.type} - ${row.product.size}${row.product.unit} (${row.product.colour})`
-            }}
-          </span>
+          <span class="text-sm text-gray-900">{{ row.product_name }}</span>
         </div>
-        <span v-else class="text-sm text-gray-400">N/A</span>
       </template>
       <template #cell-quantity_in_bags="{ value }">
         <span class="text-sm text-gray-600">{{ value }} bags</span>
@@ -259,18 +253,9 @@
 
         <!-- Purchase Records -->
         <div>
-          <div class="flex items-center justify-between mb-3">
-            <label class="block text-sm font-medium text-gray-700"
-              >Purchase Records *</label
-            >
-            <button
-              type="button"
-              @click="addPurchaseRecord"
-              class="text-sm text-blue-600 hover:text-blue-800 font-medium"
-            >
-              + Add Record
-            </button>
-          </div>
+          <label class="block text-sm font-medium text-gray-700 mb-3"
+            >Purchase Records *</label
+          >
 
           <div class="space-y-4">
             <div
