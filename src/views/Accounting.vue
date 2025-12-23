@@ -25,6 +25,7 @@
 
     <div class="mt-6">
       <ExpensesTable v-if="activeTab === 'expenses'" />
+      <PurchaseRecordsTable v-if="activeTab === 'purchase-records'" />
     </div>
   </div>
 </template>
@@ -34,11 +35,15 @@ import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import ExpensesTable from '../components/accounting/ExpensesTable.vue';
+import PurchaseRecordsTable from '../components/accounting/PurchaseRecordsTable.vue';
 
 const route = useRoute();
 const router = useRouter();
 
-const tabs = [{ id: 'expenses', label: 'Expenses' }];
+const tabs = [
+  { id: 'expenses', label: 'Expenses' },
+  { id: 'purchase-records', label: 'Purchase Records' },
+];
 
 const activeTab = computed(() => {
   const tab = route.params.tab;

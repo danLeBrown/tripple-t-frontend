@@ -57,7 +57,7 @@ export const useConfigurationStore = defineStore('configuration', () => {
   }
 
   async function createProduct(
-    product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug'>,
+    product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'slug' | 'name'>,
   ) {
     loading.value = true;
     error.value = null;

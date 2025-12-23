@@ -14,6 +14,9 @@ The Tripple T Dashboard provides a comprehensive interface for monitoring produc
 - 📱 **Responsive Design**: Modern, clean UI built with Tailwind CSS
 - ⚡ **Performance**: Optimized with Vue 3 Composition API and Pinia state management
 - 🎨 **User Experience**: Loading states, auto-dismissing alerts, and intuitive navigation
+- 📁 **File Management**: Upload, view, and manage files with S3 presigned URLs
+- 💰 **Accounting**: Expense tracking and purchase records management
+- 🎯 **Product Icons**: Visual product type indicators throughout the application
 
 ## Tech Stack
 
@@ -35,36 +38,56 @@ src/
 │   ├── layout/
 │   │   ├── Layout.vue          # Main layout wrapper
 │   │   └── Sidebar.vue          # Navigation sidebar with collapsible sections
+│   ├── accounting/
+│   │   ├── ExpensesTable.vue    # Expenses management table
+│   │   └── PurchaseRecordsTable.vue  # Purchase records management
 │   ├── common/
 │   │   ├── Alert.vue            # Global alert/notification system
 │   │   ├── DataTable.vue        # Reusable table component with CRUD
-│   │   └── Modal.vue            # Reusable modal component
-│   └── configuration/
+│   │   ├── Modal.vue            # Reusable modal component
+│   │   ├── Upload.vue           # File upload component with cropping
+│   │   └── ViewUploadModal.vue  # File viewing modal
+│   ├── configuration/
+│   ├── uploads/
+│   │   └── UploadsTable.vue    # Uploads management table
 │       ├── ColorsTable.vue      # Colors management table
 │       ├── CustomersTable.vue   # Customers management table
 │       ├── ProductsTable.vue    # Products management table
 │       ├── SizesTable.vue       # Sizes management table
 │       ├── SuppliersTable.vue   # Suppliers management table
 │       └── UnitsTable.vue       # Units management table
+├── data/
+│   └── nigerian-states.json     # Nigerian states data
 ├── services/
 │   ├── base.api.ts              # Base API service with interceptors
+│   ├── accounting.ts            # Accounting API service
 │   ├── colors.service.ts        # Colors API service
 │   ├── customers.service.ts     # Customers API service
+│   ├── expenses.service.ts      # Expenses API service
 │   ├── products.service.ts      # Products API service
+│   ├── purchase-records.service.ts  # Purchase records API service
 │   ├── sizes.service.ts         # Sizes API service
 │   ├── suppliers.service.ts     # Suppliers API service
-│   └── units.service.ts         # Units API service
+│   ├── units.service.ts         # Units API service
+│   └── uploads.service.ts       # Uploads API service
 ├── stores/
+│   ├── accounting.ts            # Accounting store (expenses)
 │   ├── alert.ts                 # Alert/notification store
 │   ├── auth.ts                  # Authentication store
 │   └── configuration.ts         # Configuration entities store
 ├── types/
 │   └── index.ts                 # TypeScript type definitions
+├── utils/
+│   ├── file-types.ts            # File type icon utilities
+│   └── product-types.ts         # Product type icon utilities
 ├── views/
-│   ├── Dashboard.vue           # Main dashboard view
+│   ├── Accounting.vue           # Accounting page (Expenses, Purchase Records)
+│   ├── ChangePassword.vue       # Password change page
 │   ├── Configuration.vue       # Configuration page (Products, Colors, Sizes, Units)
+│   ├── Dashboard.vue           # Main dashboard view
 │   ├── Login.vue                # Login page
-│   └── ThirdParties.vue         # Third Parties page (Suppliers, Customers)
+│   ├── ThirdParties.vue         # Third Parties page (Suppliers, Customers)
+│   └── Uploads.vue              # Uploads management page
 ├── router/
 │   └── index.ts                 # Vue Router configuration
 ├── App.vue                      # Root component
@@ -95,6 +118,7 @@ pnpm install
 ```env
 VITE_API_BASE_URL=https://staging-api.danlebrown.com/tripple-t/v1
 VITE_API_APP_BASE_URL=https://staging-api.danlebrown.com/tripple-t
+VITE_FILE_BASE_URL=https://staging-api.danlebrown.com/tripple-t
 ```
 
 ### Development
@@ -135,6 +159,7 @@ pnpm lint
 |----------|-------------|---------|
 | `VITE_API_BASE_URL` | Base URL for API v1 endpoints | `https://staging-api.danlebrown.com/tripple-t/v1` |
 | `VITE_API_APP_BASE_URL` | Base URL for app endpoints (CSRF, health) | `https://staging-api.danlebrown.com/tripple-t` |
+| `VITE_FILE_BASE_URL` | Base URL for file access | `https://staging-api.danlebrown.com/tripple-t` |
 
 ## Authentication Flow
 
@@ -211,6 +236,8 @@ The Products table features:
   - Colors sorted alphabetically
   - Units sorted alphabetically
 - **Type Selection**: Preform, Cap, Bottle, Nylon, Other
+- **Product Type Icons**: Visual indicators for each product type
+- **Product Name**: Auto-generated by backend, displayed in table
 
 ### Navigation
 
@@ -230,11 +257,15 @@ The Products table features:
 | Path | Component | Description |
 |------|-----------|-------------|
 | `/login` | Login | Login page with redirect tracking |
+| `/change-password` | ChangePassword | First-time password change page |
 | `/` | Dashboard | Main dashboard view |
 | `/configuration` | Configuration | Redirects to `/configuration/products` |
 | `/configuration/:tab` | Configuration | Products, Colors, Sizes, Units tabs |
 | `/third-parties` | ThirdParties | Redirects to `/third-parties/suppliers` |
 | `/third-parties/:tab` | ThirdParties | Suppliers, Customers tabs |
+| `/accounting` | Accounting | Redirects to `/accounting/expenses` |
+| `/accounting/:tab` | Accounting | Expenses, Purchase Records tabs |
+| `/uploads` | Uploads | File uploads management |
 
 ## Type Definitions
 
@@ -248,12 +279,15 @@ interface BaseEntity {
 ```
 
 Key entities:
-- **Product**: `type`, `size`, `colour`, `unit`, `slug`
+- **Product**: `type`, `size`, `colour`, `unit`, `slug`, `name` (auto-generated)
 - **Colour**: `name`, `slug`
 - **Size**: `value`
 - **Unit**: `name`, `symbol`, `slug`
-- **Supplier**: `first_name`, `last_name`, `email`, `phone_number`, `status`, `address`, `state`
+- **Supplier**: `business_name`, `contact_person_*`, `status`, `address`, `state`
 - **Customer**: Same fields as Supplier
+- **Expense**: `category`, `amount`, `narration`, `reported_at`, `has_been_calculated`
+- **PurchaseRecord**: `product_id`, `product_name`, `product_type`, `supplier_id`, `supplier_name`, `quantity_in_bags`, `price_per_bag`, `total_price`, `purchased_at`, `upload_id`
+- **Upload**: `name`, `relative_url`, `file_mimetype`, `file_size`
 
 ## Development Guidelines
 
