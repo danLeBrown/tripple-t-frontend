@@ -106,6 +106,7 @@
               class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
             >
               <button
+                v-if="props.showEdit"
                 @click="$emit('edit', row)"
                 :disabled="loading"
                 class="text-blue-600 hover:text-blue-900 mr-4 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -207,10 +208,12 @@ const props = withDefaults(
     } | null;
     searchQuery?: string;
     showActions?: boolean;
+    showEdit?: boolean;
     searchDebounceMs?: number;
   }>(),
   {
     showActions: true,
+    showEdit: true,
     searchDebounceMs: 300,
   },
 );
